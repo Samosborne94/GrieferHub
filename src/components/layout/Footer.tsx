@@ -20,7 +20,7 @@ export const Footer = () => {
                         <h4 className="text-sm font-semibold text-text-primary mb-3">Quick Links</h4>
                         <ul className="space-y-2 text-sm text-text-secondary">
                             <li>
-                                <Link href="/" className="hover:text-text-primary transition-colors">
+                                <Link href="/intel" className="hover:text-text-primary transition-colors">
                                     Intel Board
                                 </Link>
                             </li>
@@ -32,6 +32,11 @@ export const Footer = () => {
                             <li>
                                 <Link href="/dashboard" className="hover:text-text-primary transition-colors">
                                     Dashboard
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/api-docs" className="hover:text-text-primary transition-colors">
+                                    API Documentation
                                 </Link>
                             </li>
                         </ul>
