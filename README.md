@@ -41,11 +41,21 @@ GrieferHub is a dark-themed utility dashboard that enables gaming communities to
   - Track status changes and timestamps
   - Quick actions (View, Edit, Delete)
 
-### Admin/Mod Features 📋 PLANNED
+### Admin/Mod Features ✅ IMPLEMENTED
 
-- **Moderation Dashboard**: Review and verify unverified reports
-- **Status Management**: Update report statuses (Verified, Under Review, Resolved, etc.)
-- **User Management**: Basic user administration tools
+- **Moderation Dashboard** (`/mod`): Comprehensive moderation interface
+  - Review queue with all reports
+  - Filter by game, status, severity, and search
+  - Update report statuses (Verify, Reject, Resolve)
+  - Stats overview (Total, Under Review, Verified, Rejected)
+  - Quick actions for each report
+  - Role-based access (moderator and admin)
+- **Admin Dashboard** (`/admin`): User management tools
+  - View all users with role badges
+  - Update user roles (promote to moderator/admin)
+  - User statistics dashboard
+  - Quick access to moderation dashboard
+  - Admin-only access
 
 ## 🛠️ Tech Stack
 
@@ -77,7 +87,9 @@ GrieferHub/
 │   │   ├── intel/        # Intel Board page
 │   │   ├── login/        # Login page
 │   │   ├── register/     # Registration page
+│   │   ├── admin/        # Admin dashboard (user management)
 │   │   ├── dashboard/    # User dashboard page
+│   │   ├── mod/          # Moderation dashboard
 │   │   ├── report/[id]/  # Report detail & edit pages
 │   │   ├── submit/       # Report submission page
 │   │   └── page.tsx      # Home page
@@ -120,7 +132,7 @@ TBD
 
 ## 🎯 Current Status
 
-**Phase 3 - User Engagement (COMPLETE) | Phase 4 - Moderation (Next)**
+**Phase 4 - Moderation (COMPLETE) | Phase 5 - Enhancement (Next)**
 
 ### ✅ Completed Features
 - Phase 1: Foundation (Infrastructure, Auth, Database) - 100%
@@ -131,11 +143,17 @@ TBD
   - Tag and severity management
   - User Dashboard with report management
   - Edit/delete functionality for own reports
+- Phase 4: Moderation - 100%
+  - Moderation dashboard with review queue
+  - Report status management (Verify, Reject, Resolve)
+  - Admin dashboard with user management
+  - Role-based access control
 
 ### 📋 Next Up
-- Phase 4: Moderation Dashboard
-  - Review queue for unverified reports
-  - Status management tools
-  - User management
+- Phase 5: Enhancement & Advanced Features
+  - Advanced search with tag filtering
+  - Community voting system
+  - User reputation
+  - Public API
 
-**Status**: ✅ Phase 3 Complete | Ready for Phase 4
+**Status**: ✅ Phase 4 Complete | Ready for Phase 5

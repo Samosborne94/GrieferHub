@@ -52,3 +52,31 @@ export function hasRole(
     return roleHierarchy[userRole as keyof typeof roleHierarchy] >=
         roleHierarchy[requiredRole]
 }
+
+/**
+ * Require moderator or admin role - throws error if not authorized
+ * Use in API routes
+ */
+export async function requireModerator() {
+    const session = await requireAuth()
+
+    if (!hasRole(session.user?.role || 'user', 'moderator')) {
+        throw new Error('Forbidden')
+    }
+
+    return session
+}
+
+/**
+ * Require admin role - throws error if not authorized
+ * Use in API routes
+ */
+export async function requireAdmin() {
+    const session = await requireAuth()
+
+    if (!hasRole(session.user?.role || 'user', 'admin')) {
+        throw new Error('Forbidden')
+    }
+
+    return session
+}

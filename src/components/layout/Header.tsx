@@ -38,6 +38,23 @@ export const Header = () => {
                                 >
                                     Dashboard
                                 </Link>
+                                {(session.user?.role === 'moderator' ||
+                                    session.user?.role === 'admin') && (
+                                    <Link
+                                        href="/mod"
+                                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                                    >
+                                        Moderation
+                                    </Link>
+                                )}
+                                {session.user?.role === 'admin' && (
+                                    <Link
+                                        href="/admin"
+                                        className="text-red-400 hover:text-red-300 transition-colors"
+                                    >
+                                        Admin
+                                    </Link>
+                                )}
                             </>
                         )}
                     </nav>

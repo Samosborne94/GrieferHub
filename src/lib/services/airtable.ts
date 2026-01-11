@@ -221,4 +221,71 @@ export class AirtableService {
             throw new Error('Failed to fetch user reports')
         }
     }
+
+    /**
+     * Update report status (moderator/admin only)
+     */
+    static async updateReportStatus(
+        id: string,
+        status: Report['status']
+    ): Promise<Report> {
+        try {
+            const record = await base(TABLES.REPORTS).update(id, {
+                status,
+                updated_at: new Date().toISOString(),
+            })
+
+            return transformReport(record)
+        } catch (error) {
+            console.error('Error updating report status:', error)
+            throw new Error('Failed to update report status')
+        }
+    }
+
+    /**
+     * Get user by ID
+     */
+    static async getUserById(id: string): Promise<User | null> {
+        try {
+            const record = await base(TABLES.USERS).find(id)
+            return transformUser(record)
+        } catch (error) {
+            console.error('Error fetching user:', error)
+            return null
+        }
+    }
+
+    /**
+     * Get all users (admin only)
+     */
+    static async getAllUsers(): Promise<User[]> {
+        try {
+            const records = await base(TABLES.USERS)
+                .select({
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                })
+                .all()
+
+            return records.map(transformUser)
+        } catch (error) {
+            console.error('Error fetching users:', error)
+            throw new Error('Failed to fetch users')
+        }
+    }
+
+    /**
+     * Update user role (admin only)
+     */
+    static async updateUserRole(id: string, role: User['role']): Promise<User> {
+        try {
+            const record = await base(TABLES.USERS).update(id, {
+                role,
+            })
+
+            return transformUser(record)
+        } catch (error) {
+            console.error('Error updating user role:', error)
+            throw new Error('Failed to update user role')
+        }
+    }
 }

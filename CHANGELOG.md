@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Moderation Dashboard** (`/mod`) - Full-featured moderation interface
+  - Review queue showing all reports with filters
+  - Filter by game, status, severity, and search by name/description
+  - Update report statuses (Verify, Reject, Resolve) with one-click actions
+  - Stats overview cards (Total, Under Review, Verified, Rejected)
+  - Role-based access (moderator and admin only)
+  - Real-time status updates with optimistic UI
+  - Color-coded action buttons for quick moderation
+- **Admin Dashboard** (`/admin`) - User management and administration
+  - View all users in sortable table format
+  - Update user roles (promote/demote: user, moderator, admin)
+  - User statistics (total users, admins, moderators, regular users)
+  - Role badges with color coding
+  - Quick access to moderation dashboard
+  - Admin-only access control
+  - Prevent self-role modification
+- **API Endpoints for Moderation**:
+  - `GET /api/mod/reports` - Fetch all reports (moderator/admin only)
+  - `PATCH /api/mod/reports/[id]/status` - Update report status
+  - `GET /api/admin/users` - Fetch all users (admin only)
+  - `PATCH /api/admin/users/[id]/role` - Update user role (admin only)
+- **Auth Helpers**:
+  - `requireModerator()` - Require moderator or admin role
+  - `requireAdmin()` - Require admin role only
+- **Airtable Service Methods**:
+  - `updateReportStatus()` - Update report status
+  - `getUserById()` - Fetch user by ID
+  - `getAllUsers()` - Fetch all users
+  - `updateUserRole()` - Update user role
+- **Navigation Updates**:
+  - Moderation link in header (blue, visible to moderators/admins)
+  - Admin link in header (red, visible to admins only)
+  - Role-based conditional rendering
+
 - **User Dashboard** (`/dashboard`) - Complete personal dashboard for managing reports
   - View all submitted reports with search and filtering
   - Stats overview cards (Total, Verified, Under Review, Resolved)
@@ -48,17 +82,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Phase 3 status updated to COMPLETE in project documentation
-- README.md updated with User Dashboard feature details
-- PROJECT_PLAN.md updated with completion status
+- Phase 3 & 4 status updated to COMPLETE in project documentation
+- README.md updated with Moderation and Admin Dashboard features
+- PROJECT_PLAN.md updated with Phase 4 completion status
+- Header navigation now includes role-based links (Moderation, Admin)
+
+### Security
+
+- Role-based access control implemented throughout
+- Authorization checks on all moderation/admin API endpoints
+- Protection against unauthorized status updates
+- Protection against unauthorized user role changes
+- Self-modification prevention in admin dashboard
 
 ### Planned
 
-- Phase 4: Moderation dashboard (next priority)
-  - Admin/mod review queue
-  - Report status management
-  - User management tools
-- Phase 5: Advanced features and enhancements
+- Phase 5: Enhancement and advanced features (next priority)
+  - Advanced search with tag filtering
+  - Community voting system
+  - User reputation system
+  - Public API for external integrations
+  - Performance optimizations
+  - SEO improvements
+- Phase 6: Community features
+  - Notification system for status changes
+  - Mod action logging
+  - Comment system
+  - User and griefer profiles
 
 ## [0.1.0] - 2026-01-03
 
