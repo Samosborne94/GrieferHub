@@ -20,7 +20,7 @@ const nextConfig = {
     poweredByHeader: false,
     // Enable experimental features for better performance
     experimental: {
-        optimizeCss: true,
+        optimizeCss: false,
     },
 }
 

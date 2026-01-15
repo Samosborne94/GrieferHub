@@ -17,6 +17,14 @@ export interface UploadResult {
 }
 
 /**
+ * Helper to convert buffer to data URI
+ */
+function bufferToDataUri(buffer: Buffer, mimetype: string): string {
+    const b64 = buffer.toString('base64')
+    return `data:${mimetype};base64,${b64}`
+}
+
+/**
  * Upload an image to Cloudinary
  * Automatically optimizes quality and format
  */
@@ -25,8 +33,14 @@ export async function uploadImage(
     folder: string = 'griefer-evidence/images'
 ): Promise<UploadResult> {
     try {
-        const fileData = Buffer.isBuffer(file) ? `data:image/png;base64,${file.toString('base64')}` : file;
-        const result = await cloudinary.uploader.upload(fileData, {
+        let fileToUpload = file
+
+        // Convert buffer to data URI if needed
+        if (Buffer.isBuffer(file)) {
+            fileToUpload = bufferToDataUri(file, 'image/jpeg') // Default to jpeg as intermediate, Cloudinary handles format
+        }
+
+        const result = await cloudinary.uploader.upload(fileToUpload as string, {
             folder,
             resource_type: 'image',
             transformation: [
@@ -57,8 +71,14 @@ export async function uploadVideo(
     folder: string = 'griefer-evidence/videos'
 ): Promise<UploadResult> {
     try {
-        const fileData = Buffer.isBuffer(file) ? `data:video/mp4;base64,${file.toString('base64')}` : file;
-        const result = await cloudinary.uploader.upload(fileData, {
+        let fileToUpload = file
+
+        // Convert buffer to data URI if needed
+        if (Buffer.isBuffer(file)) {
+            fileToUpload = bufferToDataUri(file, 'video/mp4') // Default to mp4 as intermediate
+        }
+
+        const result = await cloudinary.uploader.upload(fileToUpload as string, {
             folder,
             resource_type: 'video',
             eager: [

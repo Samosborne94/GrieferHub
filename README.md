@@ -1,12 +1,36 @@
 # 🎯 GrieferHub
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+[![Phase](https://img.shields.io/badge/Phase-5%20Complete-success)](./docs/PROJECT_PLAN.md)
+
 **A community-driven platform for tracking and reporting griefers in gaming communities**
+
+[Live Demo](#) | [Documentation](#-documentation) | [Contributing](./CONTRIBUTING.md) | [Roadmap](./ROADMAP.md)
 
 ---
 
 ## 📋 Overview
 
 GrieferHub is a dark-themed utility dashboard that enables gaming communities to report, track, and share information about griefers. The platform provides a public Intel Board for browsing reports, video evidence integration, user submissions, and moderation tools.
+
+## 🎉 What's New
+
+**January 2026 - Comprehensive Documentation Release**
+
+We've created extensive documentation to help developers and contributors:
+
+- **NEW:** [Development Guide](./DEVELOPMENT.md) - Complete setup instructions with troubleshooting
+- **NEW:** [Features Documentation](./FEATURES.md) - 40+ features with user flows and implementation details
+- **NEW:** [Roadmap](./ROADMAP.md) - Detailed timeline through 2026 and beyond
+- **NEW:** [Deployment Guide](./DEPLOYMENT.md) - Production deployment on multiple platforms
+- **NEW:** [Future Features](./FUTURE_FEATURES.md) - Phase 6+ plans with technical specs
+- **UPDATED:** [Contributing Guide](./CONTRIBUTING.md) - Enhanced with code review checklist and best practices
+
+All documentation is beginner-friendly with code examples and step-by-step instructions!
 
 ## ✨ Key Features
 
@@ -116,13 +140,53 @@ See [SETUP.md](./docs/SETUP.md) for detailed development setup instructions.
 
 ## 📖 Documentation
 
-- [Project Plan](./docs/PROJECT_PLAN.md) - Roadmap and feature planning
-- [Architecture](./docs/ARCHITECTURE.md) - System architecture overview
-- [Setup Guide](./docs/SETUP.md) - Development environment setup
+Comprehensive documentation to help you get started and contribute:
+
+### Getting Started
+
+- **[Development Guide](./DEVELOPMENT.md)** - Complete local setup, environment variables, database configuration, and troubleshooting
+- **[Setup Guide](./docs/SETUP.md)** - Quick start guide for development
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute, code style, git workflow, and PR process
+
+### Project Information
+
+- **[Features](./FEATURES.md)** - Comprehensive feature list with status, user flows, and implementation details
+- **[Roadmap](./ROADMAP.md)** - Short-term, medium-term, and long-term development goals
+- **[Future Features](./FUTURE_FEATURES.md)** - Detailed Phase 6+ implementation plans and community requests
+- **[Project Plan](./docs/PROJECT_PLAN.md)** - Complete project roadmap and phase breakdown
+- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture, design patterns, and technical decisions
+
+### Deployment & Operations
+
+- **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment on Vercel, Netlify, AWS, or self-hosted
+- **[Changelog](./CHANGELOG.md)** - Version history and release notes
+
+### Quick Reference
+
+- **[Quick Reference](./docs/QUICK_REFERENCE.md)** - Command cheat sheet and common tasks
 
 ## 🤝 Contributing
 
-This is a community-driven project. Contributions are welcome!
+We welcome contributions from the community! GrieferHub is built by developers for the gaming community.
+
+### How to Contribute
+
+1. Read the [Contributing Guide](./CONTRIBUTING.md)
+2. Check the [Roadmap](./ROADMAP.md) for planned features
+3. Pick an issue or suggest a new feature
+4. Follow the code style guidelines
+5. Submit a pull request
+
+### Areas for Contribution
+
+- Frontend development (React/Next.js)
+- Backend development (API routes)
+- UI/UX design improvements
+- Documentation improvements
+- Testing and quality assurance
+- Feature suggestions and feedback
+
+**New to open source?** Check out issues labeled `good-first-issue` to get started!
 
 ## 📄 License
 

@@ -1,0 +1,16 @@
+/* Arc Raiders Specific Styles */
+.arc-theme-bg {
+    background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.4), var(--bg-primary)), url('/hero_background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.arc-text-glow {
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.arc-border-glow {
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);
+    border-color: rgba(255, 68, 68, 0.4);
+}
