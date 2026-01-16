@@ -1,6 +1,6 @@
 import { base, TABLES } from '../airtable-client'
 import type { Report, ReportInput, ReportFilters } from '@/types/report'
-import type { User, UserInput } from '@/types/user'
+import type { User, UserInput, UserProfile, UserProfileUpdate, UserStats } from '@/types/user'
 import type { Comment, CommentInput } from '@/types/comment'
 import type { FieldSet, Records } from 'airtable'
 
@@ -390,6 +390,125 @@ export class AirtableService {
             return transformComment(record)
         } catch (error) {
             console.error('Error fetching comment:', error)
+            return null
+        }
+    }
+
+    /**
+     * Get user profile by username
+     */
+    static async getUserByUsername(username: string): Promise<User | null> {
+        try {
+            const records = await base(TABLES.USERS)
+                .select({
+                    filterByFormula: `{username} = '${username}'`,
+                    maxRecords: 1,
+                })
+                .all()
+
+            if (records.length === 0) return null
+            return transformUser(records[0])
+        } catch (error) {
+            console.error('Error fetching user by username:', error)
+            return null
+        }
+    }
+
+    /**
+     * Get user statistics (reports, comments, reputation)
+     */
+    static async getUserStats(userId: string): Promise<UserStats> {
+        try {
+            // Get all reports by user
+            const reports = await this.getReportsByUserId(userId)
+
+            // Get all comments by user
+            const comments = await base(TABLES.COMMENTS)
+                .select({
+                    filterByFormula: `{author_id} = '${userId}'`,
+                })
+                .all()
+
+            // Calculate stats
+            const verifiedReports = reports.filter(r => r.status === 'Verified').length
+            const underReviewReports = reports.filter(r => r.status === 'Under Review').length
+            const resolvedReports = reports.filter(r => r.status === 'Resolved').length
+            const rejectedReports = reports.filter(r => r.status === 'Rejected').length
+
+            // Calculate reputation score (simple formula)
+            const reputationScore = (verifiedReports * 10) + (comments.length * 2) - (rejectedReports * 5)
+
+            // Get user to get join date
+            const user = await this.getUserById(userId)
+
+            return {
+                totalReports: reports.length,
+                verifiedReports,
+                underReviewReports,
+                resolvedReports,
+                rejectedReports,
+                totalComments: comments.length,
+                reputationScore: Math.max(0, reputationScore), // Never negative
+                joinDate: user?.createdAt || new Date(),
+            }
+        } catch (error) {
+            console.error('Error calculating user stats:', error)
+            throw new Error('Failed to calculate user stats')
+        }
+    }
+
+    /**
+     * Update user profile
+     */
+    static async updateUserProfile(
+        userId: string,
+        data: UserProfileUpdate
+    ): Promise<void> {
+        try {
+            const updateData: any = {}
+
+            if (data.bio !== undefined) updateData.bio = data.bio
+            if (data.avatar !== undefined) updateData.avatar = data.avatar
+            if (data.location !== undefined) updateData.location = data.location
+            if (data.website !== undefined) updateData.website = data.website
+            if (data.discord !== undefined) updateData.discord = data.discord
+            if (data.steam !== undefined) updateData.steam = data.steam
+
+            await base(TABLES.USERS).update(userId, updateData)
+        } catch (error) {
+            console.error('Error updating user profile:', error)
+            throw new Error('Failed to update user profile')
+        }
+    }
+
+    /**
+     * Get full user profile with stats
+     */
+    static async getUserProfile(userId: string): Promise<UserProfile | null> {
+        try {
+            const user = await this.getUserById(userId)
+            if (!user) return null
+
+            const stats = await this.getUserStats(userId)
+
+            // Get profile fields from user record
+            const record = await base(TABLES.USERS).find(userId)
+
+            return {
+                ...user,
+                bio: record.get('bio') as string || undefined,
+                avatar: record.get('avatar') as string || undefined,
+                location: record.get('location') as string || undefined,
+                website: record.get('website') as string || undefined,
+                discord: record.get('discord') as string || undefined,
+                steam: record.get('steam') as string || undefined,
+                reputationScore: stats.reputationScore,
+                totalReports: stats.totalReports,
+                verifiedReports: stats.verifiedReports,
+                totalComments: stats.totalComments,
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error)
             return null
         }
     }
