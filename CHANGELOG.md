@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Comment System** (Phase 6) - Interactive discussions on reports
+  - Users can post comments on any report (authentication required)
+  - Edit and delete own comments (moderators can edit/delete any)
+  - Role-based badges (User, Moderator, Admin)
+  - Relative time display ("2 hours ago", "Just now", etc.)
+  - Edit tracking with "(edited)" indicator
+  - Real-time comment loading and updates
+  - Inline editing interface
+  - Confirmation dialogs for deletions
+- **Comment API Endpoints**:
+  - `GET /api/reports/[id]/comments` - List all comments for a report
+  - `POST /api/reports/[id]/comments` - Create new comment
+  - `PUT /api/comments/[id]` - Update comment (owner/mod/admin only)
+  - `DELETE /api/comments/[id]` - Delete comment (owner/mod/admin only)
+- **Comments Table in Airtable**:
+  - report_id, author_id, author_username, author_role
+  - content (max 2000 chars), created_at, updated_at, is_edited
+- **Documentation**:
+  - Comprehensive COMMENT_SYSTEM.md guide
+  - API endpoint documentation
+  - Database schema reference
+  - Security considerations
+  - Troubleshooting guide
+
+### Previous Additions
+
 - **SEO Optimization** - Comprehensive search engine optimization
   - Enhanced metadata with Open Graph and Twitter Cards
   - Page-specific metadata for key pages
