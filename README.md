@@ -19,16 +19,25 @@ GrieferHub is a dark-themed utility dashboard that enables gaming communities to
 
 ## 🎉 What's New
 
+**January 2026 - Phase 6: Community Features (IN PROGRESS)**
+
+We're actively developing Phase 6 community features:
+
+- **NEW:** [Comment System](./docs/COMMENT_SYSTEM.md) - Full-featured commenting on reports with edit/delete capabilities
+- Interactive discussions on report pages
+- Role-based comment moderation
+- Real-time comment updates
+
 **January 2026 - Comprehensive Documentation Release**
 
 We've created extensive documentation to help developers and contributors:
 
-- **NEW:** [Development Guide](./DEVELOPMENT.md) - Complete setup instructions with troubleshooting
-- **NEW:** [Features Documentation](./FEATURES.md) - 40+ features with user flows and implementation details
-- **NEW:** [Roadmap](./ROADMAP.md) - Detailed timeline through 2026 and beyond
-- **NEW:** [Deployment Guide](./DEPLOYMENT.md) - Production deployment on multiple platforms
-- **NEW:** [Future Features](./FUTURE_FEATURES.md) - Phase 6+ plans with technical specs
-- **UPDATED:** [Contributing Guide](./CONTRIBUTING.md) - Enhanced with code review checklist and best practices
+- [Development Guide](./DEVELOPMENT.md) - Complete setup instructions with troubleshooting
+- [Features Documentation](./FEATURES.md) - 40+ features with user flows and implementation details
+- [Roadmap](./ROADMAP.md) - Detailed timeline through 2026 and beyond
+- [Deployment Guide](./DEPLOYMENT.md) - Production deployment on multiple platforms
+- [Future Features](./FUTURE_FEATURES.md) - Phase 6+ plans with technical specs
+- [Contributing Guide](./CONTRIBUTING.md) - Enhanced with code review checklist and best practices
 
 All documentation is beginner-friendly with code examples and step-by-step instructions!
 
@@ -80,6 +89,17 @@ All documentation is beginner-friendly with code examples and step-by-step instr
   - User statistics dashboard
   - Quick access to moderation dashboard
   - Admin-only access
+
+### Community Features ✅ IMPLEMENTED (Phase 6)
+
+- **Comment System**: Interactive discussions on reports
+  - Post comments on any report (authenticated users)
+  - Edit your own comments (moderators can edit any)
+  - Delete comments with confirmation
+  - Role-based badges (User, Moderator, Admin)
+  - Relative time display ("2 hours ago")
+  - Edit tracking with "(edited)" indicator
+  - Real-time comment updates
 
 ## 🛠️ Tech Stack
 
@@ -196,7 +216,7 @@ TBD
 
 ## 🎯 Current Status
 
-**Phase 5 - Enhancement (COMPLETE) | Phase 6 - Community Features (Next)**
+**Phase 6 - Community Features (IN PROGRESS)**
 
 ### ✅ Completed Features
 - Phase 1: Foundation (Infrastructure, Auth, Database) - 100%
@@ -217,11 +237,17 @@ TBD
   - Public API with documentation
   - Performance optimizations
   - Image optimization
+- Phase 6: Community Features - 30% (In Progress)
+  - ✅ Comment system on reports
+  - 🚧 User profiles (Next)
+  - 🚧 Griefer profiles (Next)
+  - 🚧 Notification system (Planned)
 
 ### 📋 Next Up
-- Phase 6: Community Features
-  - Comment system on reports
-  - User and griefer profiles
-  - Analytics dashboard
+- Complete Phase 6: Community Features
+  - User profiles with activity history
+  - Griefer profiles (aggregated reports)
+  - Notification system
+  - Enhanced analytics
 
-**Status**: ✅ Phase 5 Complete | Ready for Phase 6
+**Status**: 🚧 Phase 6 In Progress | Comment System Complete

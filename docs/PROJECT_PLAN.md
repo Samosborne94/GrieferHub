@@ -103,11 +103,18 @@ Create a comprehensive community-driven platform that empowers gaming communitie
 - [ ] Report voting/community feedback (Future)
 - [ ] User reputation system (Future)
 
-### Phase 6: Community Features (Future)
+### Phase 6: Community Features (In Progress)
 
-- [ ] Comment system on reports
+- [x] Comment system on reports
+  - Full CRUD operations (Create, Read, Update, Delete)
+  - Role-based permissions
+  - Real-time updates
+  - Edit tracking
+  - Time display (relative timestamps)
+  - Authentication required
 - [ ] User profiles
 - [ ] Griefer profiles (aggregated reports)
+- [ ] Notification system
 - [ ] Analytics dashboard
 - [ ] Discord/game integration bots
 
@@ -139,6 +146,20 @@ Create a comprehensive community-driven platform that empowers gaming communitie
 | updated_at | Last Modified | Last update timestamp |
 | server | Text | Server/region where incident occurred |
 | tags | Multiple Select | Categorization tags |
+
+### Comments Table (Airtable)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | Auto-number | Unique comment ID |
+| report_id | Link to Reports | Report being commented on |
+| author_id | Link to Users | Comment author |
+| author_username | Text | Username (denormalized for performance) |
+| author_role | Single Select | user/moderator/admin |
+| content | Long Text | Comment content (max 2000 chars) |
+| created_at | Created Time | Comment timestamp |
+| updated_at | Last Modified | Last edit timestamp |
+| is_edited | Checkbox | Whether comment has been edited |
 
 ## 🎨 Design Principles
 

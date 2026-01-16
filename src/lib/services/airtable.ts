@@ -1,6 +1,7 @@
 import { base, TABLES } from '../airtable-client'
 import type { Report, ReportInput, ReportFilters } from '@/types/report'
 import type { User, UserInput } from '@/types/user'
+import type { Comment, CommentInput } from '@/types/comment'
 import type { FieldSet, Records } from 'airtable'
 
 /**
@@ -33,6 +34,23 @@ function transformUser(record: any): User {
         email: record.get('email'),
         role: record.get('role') || 'user',
         createdAt: new Date(record.get('created_at')),
+    }
+}
+
+/**
+ * Transform Airtable record to Comment object
+ */
+function transformComment(record: any): Comment {
+    return {
+        id: record.id,
+        reportId: record.get('report_id'),
+        authorId: record.get('author_id'),
+        authorUsername: record.get('author_username'),
+        authorRole: record.get('author_role') || 'user',
+        content: record.get('content'),
+        createdAt: new Date(record.get('created_at')),
+        updatedAt: new Date(record.get('updated_at')),
+        isEdited: record.get('is_edited') || false,
     }
 }
 
@@ -286,6 +304,93 @@ export class AirtableService {
         } catch (error) {
             console.error('Error updating user role:', error)
             throw new Error('Failed to update user role')
+        }
+    }
+
+    /**
+     * Get comments for a report
+     */
+    static async getCommentsByReportId(reportId: string): Promise<Comment[]> {
+        try {
+            const records = await base(TABLES.COMMENTS)
+                .select({
+                    filterByFormula: `{report_id} = '${reportId}'`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                })
+                .all()
+
+            return records.map(transformComment)
+        } catch (error) {
+            console.error('Error fetching comments:', error)
+            throw new Error('Failed to fetch comments')
+        }
+    }
+
+    /**
+     * Create a new comment
+     */
+    static async createComment(
+        data: CommentInput & { authorId: string; authorUsername: string; authorRole: string }
+    ): Promise<Comment> {
+        try {
+            const record = await base(TABLES.COMMENTS).create({
+                report_id: data.reportId,
+                author_id: data.authorId,
+                author_username: data.authorUsername,
+                author_role: data.authorRole,
+                content: data.content,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                is_edited: false,
+            })
+
+            return transformComment(record)
+        } catch (error) {
+            console.error('Error creating comment:', error)
+            throw new Error('Failed to create comment')
+        }
+    }
+
+    /**
+     * Update a comment
+     */
+    static async updateComment(id: string, content: string): Promise<Comment> {
+        try {
+            const record = await base(TABLES.COMMENTS).update(id, {
+                content,
+                updated_at: new Date().toISOString(),
+                is_edited: true,
+            })
+
+            return transformComment(record)
+        } catch (error) {
+            console.error('Error updating comment:', error)
+            throw new Error('Failed to update comment')
+        }
+    }
+
+    /**
+     * Delete a comment
+     */
+    static async deleteComment(id: string): Promise<void> {
+        try {
+            await base(TABLES.COMMENTS).destroy(id)
+        } catch (error) {
+            console.error('Error deleting comment:', error)
+            throw new Error('Failed to delete comment')
+        }
+    }
+
+    /**
+     * Get a single comment by ID
+     */
+    static async getCommentById(id: string): Promise<Comment | null> {
+        try {
+            const record = await base(TABLES.COMMENTS).find(id)
+            return transformComment(record)
+        } catch (error) {
+            console.error('Error fetching comment:', error)
+            return null
         }
     }
 }

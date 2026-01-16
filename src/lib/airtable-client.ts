@@ -20,4 +20,5 @@ export const base = airtable.base(process.env.AIRTABLE_BASE_ID)
 export const TABLES = {
     USERS: 'Users',
     REPORTS: 'Reports',
+    COMMENTS: 'Comments',
 } as const

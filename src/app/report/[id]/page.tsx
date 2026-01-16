@@ -89,7 +89,7 @@ export default function ReportDetailPage() {
                             </div>
 
                             {/* Comments Section */}
-                            <CommentsSection />
+                            <CommentsSection reportId={reportId} />
                         </div>
 
                         {/* Right Column: Suspect Info */}
