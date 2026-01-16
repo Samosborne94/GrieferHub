@@ -1,7 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PlayerSearch } from '@/components/search/PlayerSearch'
+import { ReportsCarousel } from '@/components/home/ReportsCarousel'
+import { LiveStats } from '@/components/home/LiveStats'
 
 export default function HomePage() {
     return (
@@ -53,31 +57,21 @@ export default function HomePage() {
                                         <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </button>
                                 </Link>
-                                <Link href="/intel">
+                                <Link href="/forum">
                                     <button className="px-8 py-4 glass-hover rounded-xl font-semibold text-text-primary border border-border-primary hover:border-accent-primary transition-all duration-300 w-full sm:w-auto uppercase tracking-wide">
                                         View Intel Board
                                     </button>
                                 </Link>
                             </div>
 
-                            {/* Stats */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto mt-20 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                                <div className="glass rounded-xl p-6">
-                                    <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">1K+</div>
-                                    <div className="text-sm text-text-tertiary">Active Reports</div>
-                                </div>
-                                <div className="glass rounded-xl p-6">
-                                    <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">500+</div>
-                                    <div className="text-sm text-text-tertiary">Community Members</div>
-                                </div>
-                                <div className="glass rounded-xl p-6">
-                                    <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">50+</div>
-                                    <div className="text-sm text-text-tertiary">Supported Games</div>
-                                </div>
-                                <div className="glass rounded-xl p-6">
-                                    <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">99%</div>
-                                    <div className="text-sm text-text-tertiary">Verification Rate</div>
-                                </div>
+                            {/* Live Report Stream */}
+                            <div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                                <ReportsCarousel />
+                            </div>
+
+                            {/* Live Stats */}
+                            <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                                <LiveStats />
                             </div>
                         </div>
                     </div>
