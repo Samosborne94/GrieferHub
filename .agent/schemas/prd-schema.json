@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PRD Schema",
+  "description": "Product Requirements Document schema for autonomous agent execution",
+  "type": "object",
+  "required": ["meta", "stories"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["version", "project", "created"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "PRD version (semver)"
+        },
+        "project": {
+          "type": "string",
+          "description": "Project name"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "PRD creation timestamp"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        },
+        "owner": {
+          "type": "string",
+          "description": "PRD owner"
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "description": "User stories to be implemented",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "description", "acceptance", "passes"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]+-[0-9]+$",
+            "description": "Unique story ID (e.g., GH-001)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Story title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed story description"
+          },
+          "acceptance": {
+            "type": "array",
+            "description": "Acceptance criteria",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "dependencies": {
+            "type": "array",
+            "description": "Story IDs that must be completed first",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]+-[0-9]+$"
+            },
+            "default": []
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "default": "medium"
+          },
+          "estimatedHours": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Estimated implementation time"
+          },
+          "tags": {
+            "type": "array",
+            "description": "Story tags for categorization",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "passes": {
+            "type": "boolean",
+            "description": "Whether tests pass for this story",
+            "default": false
+          },
+          "implemented": {
+            "type": "boolean",
+            "description": "Whether story is implemented",
+            "default": false
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Whether story is verified",
+            "default": false
+          },
+          "files": {
+            "type": "array",
+            "description": "Files modified/created for this story",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "commits": {
+            "type": "array",
+            "description": "Git commit hashes for this story",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Implementation start time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Implementation completion time"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Errors encountered during implementation",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "resolved": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "default": []
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "Agent configuration",
+      "properties": {
+        "testCommand": {
+          "type": "string",
+          "description": "Command to run tests",
+          "default": "npm test"
+        },
+        "buildCommand": {
+          "type": "string",
+          "description": "Command to build project",
+          "default": "npm run build"
+        },
+        "lintCommand": {
+          "type": "string",
+          "description": "Command to lint code",
+          "default": "npm run lint"
+        },
+        "maxRetries": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 3,
+          "description": "Max retries per story on failure"
+        },
+        "autoCommit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically commit on passing tests"
+        },
+        "tokenBudget": {
+          "type": "number",
+          "minimum": 10000,
+          "default": 150000,
+          "description": "Token budget per iteration"
+        },
+        "haltOnFailure": {
+          "type": "boolean",
+          "default": false,
+          "description": "Stop execution on first failure"
+        }
+      }
+    }
+  }
+}
