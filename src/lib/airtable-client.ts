@@ -21,4 +21,5 @@ export const TABLES = {
     USERS: 'Users',
     REPORTS: 'Reports',
     COMMENTS: 'Comments',
+    API_KEYS: 'API_Keys',
 } as const

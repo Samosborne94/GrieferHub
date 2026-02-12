@@ -2,7 +2,10 @@ import { base, TABLES } from '../airtable-client'
 import type { Report, ReportInput, ReportFilters } from '@/types/report'
 import type { User, UserInput, UserProfile, UserProfileUpdate, UserStats } from '@/types/user'
 import type { Comment, CommentInput } from '@/types/comment'
+import type { ApiKey, ApiKeyInput, ApiKeyWithKey, ApiKeyListItem } from '@/types/apiKey'
 import type { FieldSet, Records } from 'airtable'
+import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
 
 /**
  * Transform Airtable record to Report object
@@ -52,6 +55,28 @@ function transformComment(record: any): Comment {
         updatedAt: new Date(record.get('updated_at')),
         isEdited: record.get('is_edited') || false,
     }
+}
+
+/**
+ * Transform Airtable record to ApiKey object (without actual key)
+ */
+function transformApiKey(record: any): ApiKeyListItem {
+    const lastUsed = record.get('last_used')
+    const expiresAt = record.get('expires_at')
+
+    return {
+        id: record.id,
+        userId: record.get('user_id'),
+        name: record.get('name'),
+        keyPrefix: record.get('key_prefix'),
+        scopes: record.get('scopes') || [],
+        rateLimit: record.get('rate_limit') || 100,
+        usageCount: record.get('usage_count') || 0,
+        lastUsed: lastUsed ? new Date(lastUsed) : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        isActive: record.get('is_active') || false,
+        createdAt: new Date(record.get('created_at')),
+    } as ApiKeyListItem
 }
 
 export class AirtableService {
@@ -510,6 +535,180 @@ export class AirtableService {
         } catch (error) {
             console.error('Error fetching user profile:', error)
             return null
+        }
+    }
+
+    // ===== API KEY MANAGEMENT (Phase 8) =====
+
+    /**
+     * Generate a new API key
+     * Returns the unhashed key only once
+     */
+    static async createApiKey(
+        userId: string,
+        data: ApiKeyInput
+    ): Promise<ApiKeyWithKey> {
+        try {
+            // Generate random API key
+            const rawKey = `ghk_${randomBytes(32).toString('hex')}`
+            const keyPrefix = rawKey.substring(0, 12) // "ghk_abcd..." for display
+
+            // Hash the key for storage
+            const hashedKey = await bcrypt.hash(rawKey, 10)
+
+            // Default values
+            const scopes = data.scopes || ['reports:read']
+            const rateLimit = data.rateLimit || 100 // 100 requests per minute default
+
+            // Create record
+            const record = await base(TABLES.API_KEYS).create({
+                user_id: userId,
+                name: data.name,
+                key_prefix: keyPrefix,
+                hashed_key: hashedKey,
+                scopes: scopes,
+                rate_limit: rateLimit,
+                usage_count: 0,
+                last_used: null,
+                expires_at: data.expiresAt?.toISOString() || null,
+                is_active: true,
+                created_at: new Date().toISOString(),
+            })
+
+            const apiKey = transformApiKey(record)
+
+            // Return with unhashed key (only time it's visible)
+            return {
+                ...apiKey,
+                key: rawKey,
+            }
+        } catch (error) {
+            console.error('Error creating API key:', error)
+            throw new Error('Failed to create API key')
+        }
+    }
+
+    /**
+     * Get all API keys for a user (without actual key values)
+     */
+    static async getApiKeysByUserId(userId: string): Promise<ApiKeyListItem[]> {
+        try {
+            const records = await base(TABLES.API_KEYS)
+                .select({
+                    filterByFormula: `{user_id} = '${userId}'`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                })
+                .all()
+
+            return records.map(transformApiKey)
+        } catch (error) {
+            console.error('Error fetching API keys:', error)
+            throw new Error('Failed to fetch API keys')
+        }
+    }
+
+    /**
+     * Verify and get API key by raw key value
+     */
+    static async verifyApiKey(rawKey: string): Promise<ApiKey | null> {
+        try {
+            // Get all active keys
+            const records = await base(TABLES.API_KEYS)
+                .select({
+                    filterByFormula: `{is_active} = TRUE()`,
+                })
+                .all()
+
+            // Check each key hash
+            for (const record of records) {
+                const hashedKey = record.get('hashed_key') as string
+                const isMatch = await bcrypt.compare(rawKey, hashedKey)
+
+                if (isMatch) {
+                    // Check if expired
+                    const expiresAt = record.get('expires_at')
+                    if (expiresAt && new Date(expiresAt) < new Date()) {
+                        return null // Expired
+                    }
+
+                    // Update usage
+                    await base(TABLES.API_KEYS).update(record.id, {
+                        usage_count: (record.get('usage_count') as number || 0) + 1,
+                        last_used: new Date().toISOString(),
+                    })
+
+                    const lastUsed = record.get('last_used')
+                    const expires = record.get('expires_at')
+
+                    return {
+                        id: record.id,
+                        userId: record.get('user_id') as string,
+                        name: record.get('name') as string,
+                        keyPrefix: record.get('key_prefix') as string,
+                        hashedKey: hashedKey,
+                        scopes: record.get('scopes') as any[] || [],
+                        rateLimit: record.get('rate_limit') as number || 100,
+                        usageCount: (record.get('usage_count') as number || 0) + 1,
+                        lastUsed: lastUsed ? new Date(lastUsed as string) : null,
+                        expiresAt: expires ? new Date(expires as string) : null,
+                        isActive: true,
+                        createdAt: new Date(record.get('created_at') as string),
+                    }
+                }
+            }
+
+            return null // No match found
+        } catch (error) {
+            console.error('Error verifying API key:', error)
+            return null
+        }
+    }
+
+    /**
+     * Revoke (deactivate) an API key
+     */
+    static async revokeApiKey(keyId: string, userId: string): Promise<void> {
+        try {
+            // Verify ownership
+            const record = await base(TABLES.API_KEYS).find(keyId)
+            const keyUserId = record.get('user_id') as string
+
+            if (keyUserId !== userId) {
+                throw new Error('Unauthorized to revoke this key')
+            }
+
+            // Deactivate instead of delete (for audit trail)
+            await base(TABLES.API_KEYS).update(keyId, {
+                is_active: false,
+            })
+        } catch (error) {
+            console.error('Error revoking API key:', error)
+            throw new Error('Failed to revoke API key')
+        }
+    }
+
+    /**
+     * Get API key by ID (for admin purposes)
+     */
+    static async getApiKeyById(keyId: string): Promise<ApiKeyListItem | null> {
+        try {
+            const record = await base(TABLES.API_KEYS).find(keyId)
+            return transformApiKey(record)
+        } catch (error) {
+            console.error('Error fetching API key:', error)
+            return null
+        }
+    }
+
+    /**
+     * Delete API key permanently (admin only)
+     */
+    static async deleteApiKey(keyId: string): Promise<void> {
+        try {
+            await base(TABLES.API_KEYS).destroy(keyId)
+        } catch (error) {
+            console.error('Error deleting API key:', error)
+            throw new Error('Failed to delete API key')
         }
     }
 }
