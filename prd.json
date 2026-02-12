@@ -1,0 +1,215 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "project": "GrieferHub",
+    "created": "2026-01-18T00:00:00Z",
+    "owner": "Development Team"
+  },
+  "stories": [
+    {
+      "id": "GH-P6-001",
+      "title": "User profile page - Basic layout",
+      "description": "Create the foundational user profile page structure with header, stats, and recent activity sections",
+      "acceptance": [
+        "Page accessible at /profile/[username]",
+        "Shows username and user role badge",
+        "Displays account creation date",
+        "Responsive layout works on mobile and desktop",
+        "All tests pass"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "estimatedHours": 3,
+      "tags": ["phase-6", "ui", "profile"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-P6-002",
+      "title": "User profile - Statistics section",
+      "description": "Add statistics cards showing user's report and comment activity",
+      "acceptance": [
+        "Shows total reports submitted",
+        "Shows verified vs pending report counts",
+        "Shows total comments made",
+        "Shows account age in days/months",
+        "Stats update in real-time",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-P6-001"],
+      "priority": "high",
+      "estimatedHours": 2,
+      "tags": ["phase-6", "ui", "profile", "stats"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-P6-003",
+      "title": "User profile - Recent activity feed",
+      "description": "Display recent reports and comments from the user",
+      "acceptance": [
+        "Shows last 10 reports submitted",
+        "Shows last 10 comments made",
+        "Links to full report pages",
+        "Pagination for viewing more",
+        "Timestamps in relative format",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-P6-001"],
+      "priority": "medium",
+      "estimatedHours": 4,
+      "tags": ["phase-6", "ui", "profile", "activity"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-P6-004",
+      "title": "User profile - Edit profile functionality",
+      "description": "Allow users to edit their own profile information",
+      "acceptance": [
+        "Edit button visible only on own profile",
+        "Can update bio/description (max 500 chars)",
+        "Can update avatar (Cloudinary upload)",
+        "Changes saved to Airtable",
+        "Validation for all inputs",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-P6-001"],
+      "priority": "medium",
+      "estimatedHours": 5,
+      "tags": ["phase-6", "ui", "profile", "crud"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-API-001",
+      "title": "API Key Management - Database schema",
+      "description": "Create Airtable schema for API key management",
+      "acceptance": [
+        "API_Keys table created in Airtable",
+        "Fields: id, userId, key (hashed), name, scopes, rateLimit, usageCount, lastUsed, expiresAt, isActive, createdAt",
+        "Relationships to Users table established",
+        "All tests pass"
+      ],
+      "dependencies": [],
+      "priority": "critical",
+      "estimatedHours": 2,
+      "tags": ["phase-8", "api", "database"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-API-002",
+      "title": "API Key Management - Generate keys endpoint",
+      "description": "Implement endpoint to generate new API keys",
+      "acceptance": [
+        "POST /api/keys creates new API key",
+        "Returns unhashed key only once",
+        "Key stored hashed in database",
+        "Default scopes applied",
+        "Rate limit tier assigned",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-API-001"],
+      "priority": "critical",
+      "estimatedHours": 3,
+      "tags": ["phase-8", "api", "security"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-API-003",
+      "title": "API Key Management - List and revoke endpoints",
+      "description": "Implement endpoints to list and revoke API keys",
+      "acceptance": [
+        "GET /api/keys lists user's API keys (without actual key values)",
+        "DELETE /api/keys/:id revokes a key",
+        "Only key owner can list/revoke their keys",
+        "Returns 404 for non-existent keys",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-API-002"],
+      "priority": "high",
+      "estimatedHours": 2,
+      "tags": ["phase-8", "api", "security"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-API-004",
+      "title": "Rate Limiting - Middleware implementation",
+      "description": "Implement rate limiting middleware for API endpoints",
+      "acceptance": [
+        "Rate limiter middleware created",
+        "Uses Redis for distributed rate limiting",
+        "Respects API key tier limits",
+        "Returns 429 when limit exceeded",
+        "Includes retry-after header",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-API-003"],
+      "priority": "critical",
+      "estimatedHours": 4,
+      "tags": ["phase-8", "api", "security", "infrastructure"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-STEAM-001",
+      "title": "Steam Integration - OAuth flow",
+      "description": "Implement Steam OAuth authentication flow",
+      "acceptance": [
+        "GET /api/integrations/steam/auth initiates OAuth",
+        "Redirects to Steam login",
+        "Callback handles OAuth response",
+        "Steam ID stored in database",
+        "Error handling for failed auth",
+        "All tests pass"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "estimatedHours": 4,
+      "tags": ["phase-8", "integration", "steam", "oauth"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    },
+    {
+      "id": "GH-STEAM-002",
+      "title": "Steam Integration - Profile data fetching",
+      "description": "Fetch and cache Steam profile data",
+      "acceptance": [
+        "GET /api/integrations/steam/profile returns Steam data",
+        "Includes username, avatar, profile URL",
+        "Shows VAC ban status",
+        "Lists owned games",
+        "Data cached for 24 hours",
+        "All tests pass"
+      ],
+      "dependencies": ["GH-STEAM-001"],
+      "priority": "high",
+      "estimatedHours": 3,
+      "tags": ["phase-8", "integration", "steam", "caching"],
+      "passes": false,
+      "implemented": false,
+      "verified": false
+    }
+  ],
+  "config": {
+    "testCommand": "npm test",
+    "buildCommand": "npm run build",
+    "lintCommand": "npm run lint:fix",
+    "maxRetries": 3,
+    "autoCommit": true,
+    "tokenBudget": 150000,
+    "haltOnFailure": false
+  }
+}
