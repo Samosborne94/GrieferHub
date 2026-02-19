@@ -1,0 +1,42 @@
+{
+    "project": "GrieferHub",
+    "branchName": "ralph/setup-tasks",
+    "description": "Phase 6 - User Profile System",
+    "userStories": [
+        {
+            "id": "US-001",
+            "title": "Validate Ralph Installation",
+            "description": "As a developer, I need to ensure Ralph is working correctly by having it perform a simple check.",
+            "acceptanceCriteria": [
+                "Create a test file 'ralph-test.txt' in the root",
+                "Add content 'Hello from Ralph' to the file",
+                "Verify file works",
+                "Typecheck passes"
+            ],
+            "priority": 1,
+            "passes": true,
+            "notes": "Completed successfully. Note: Pre-existing TypeScript errors in codebase are unrelated to this change."
+        },
+        {
+            "id": "GH-P6-001",
+            "title": "User profile page - Basic layout",
+            "description": "Create the foundational user profile page at /profile/[username]. This is a Next.js App Router page. The project uses Tailwind CSS with a dark theme, TypeScript, and Airtable as the database via src/lib/services/airtable.ts. Existing page patterns can be found in src/app/report/[id]/page.tsx and src/app/intel/page.tsx. The AirtableService already has getUserByUsername() and getUserById() methods. Use existing components from src/components/common/ (Badge, Button, LoadingSpinner, SkeletonCard) and src/components/layout/ (Header, Footer). The StatusBadge component in src/components/reports/ shows how role badges work.",
+            "acceptanceCriteria": [
+                "Page accessible at /profile/[username] using Next.js App Router (src/app/profile/[username]/page.tsx)",
+                "Fetches user data from AirtableService.getUserByUsername()",
+                "Shows username prominently and user role badge (User/Moderator/Admin) using existing Badge component patterns",
+                "Displays account creation date in a readable format",
+                "Shows a placeholder section for stats (will be filled by GH-P6-002)",
+                "Shows a placeholder section for recent activity (will be filled by GH-P6-003)",
+                "Responsive layout works on mobile and desktop using Tailwind CSS",
+                "Dark theme consistent with existing pages (bg-gray-900, text-white pattern)",
+                "Returns 404-style message for non-existent usernames",
+                "TypeScript compiles without new errors (pre-existing errors are acceptable)",
+                "npm run build completes successfully"
+            ],
+            "priority": 1,
+            "passes": false,
+            "notes": ""
+        }
+    ]
+}

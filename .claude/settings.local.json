@@ -15,7 +15,8 @@
       "Bash(cd /c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub)",
       "WebSearch",
       "Bash(bash scripts/ralph/ralph.sh:*)",
-      "Bash(unset:*)"
+      "Bash(unset:*)",
+      "Bash(env -u CLAUDECODE bash:*)"
     ]
   }
 }
