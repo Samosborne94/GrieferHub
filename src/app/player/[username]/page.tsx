@@ -1,57 +1,135 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { useParams } from 'next/navigation'
-import { StatusBadge } from '@/components/reports/StatusBadge'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Badge } from '@/components/common/Badge'
+import type { UserProfile } from '@/types/user'
 
-// Type definition for a mock report
-interface MockReport {
-    id: string
-    date: string
-    game: string
-    severity: 'Low' | 'Medium' | 'High' | 'Critical'
-    status: 'Verified' | 'Pending' | 'Rejected'
-    description: string
-    reporter: string
-}
+type PublicProfile = Omit<UserProfile, 'email'>
 
 export default function PlayerProfilePage() {
     const params = useParams()
-    // Handle potential array or string for username
     const username = Array.isArray(params?.username)
         ? decodeURIComponent(params.username[0])
         : decodeURIComponent(params?.username || '')
 
-    // Mock data for specific scenarios or generic filler
-    const isFakeFriendly = username.toLowerCase().includes('trustme')
+    const [profile, setProfile] = useState<PublicProfile | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [notFound, setNotFound] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    // Stats
-    const totalReports = isFakeFriendly ? 12 : 0
-    const reputationScore = isFakeFriendly ? 'Critical Risk' : 'Unknown'
+    useEffect(() => {
+        async function fetchProfile() {
+            try {
+                setLoading(true)
+                const res = await fetch(`/api/users/${encodeURIComponent(username)}`)
+                const data = await res.json()
 
-    // Mock Reports List
-    const reports: MockReport[] = isFakeFriendly ? [
-        {
-            id: 'RPT-8291',
-            date: '2 hours ago',
-            game: 'Arc Raiders',
-            severity: 'Critical',
-            status: 'Verified',
-            description: 'Approached as a friendly solo player near the extraction point. Waited until I was loading my loot, then shot me in the back. Stole full kit.',
-            reporter: 'Survivor_01'
-        },
-        {
-            id: 'RPT-8105',
-            date: '1 day ago',
-            game: 'Arc Raiders',
-            severity: 'High',
-            status: 'Verified',
-            description: 'Uses voice chat to bait players into "teaming up". Do not trust.',
-            reporter: 'Extraction_Team_Alpha'
+                if (!res.ok || !data.success) {
+                    if (res.status === 404) {
+                        setNotFound(true)
+                    } else {
+                        setError(data.error || 'Failed to load profile')
+                    }
+                    return
+                }
+
+                setProfile(data.data)
+            } catch {
+                setError('Failed to load profile')
+            } finally {
+                setLoading(false)
+            }
         }
-    ] : []
+
+        if (username) {
+            fetchProfile()
+        }
+    }, [username])
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col arc-theme-bg text-text-primary">
+                <Header />
+                <main className="flex-1 flex items-center justify-center">
+                    <LoadingSpinner size="lg" />
+                </main>
+                <Footer />
+            </div>
+        )
+    }
+
+    // 404 state
+    if (notFound) {
+        return (
+            <div className="min-h-screen flex flex-col arc-theme-bg text-text-primary">
+                <Header />
+                <main className="flex-1 container py-12">
+                    <EmptyState
+                        variant="search"
+                        title="Player Not Found"
+                        description={`No player found with the username "${username}". Check the spelling and try again.`}
+                        action={{ label: 'Browse Reports', href: '/reports' }}
+                    />
+                </main>
+                <Footer />
+            </div>
+        )
+    }
+
+    // Error state
+    if (error || !profile) {
+        return (
+            <div className="min-h-screen flex flex-col arc-theme-bg text-text-primary">
+                <Header />
+                <main className="flex-1 container py-12">
+                    <EmptyState
+                        variant="error"
+                        title="Something Went Wrong"
+                        description={error || 'Failed to load profile data.'}
+                    />
+                </main>
+                <Footer />
+            </div>
+        )
+    }
+
+    // Format creation date
+    const createdAt = new Date(profile.createdAt)
+    const formattedDate = createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+
+    // Role badge variant mapping
+    const roleBadgeVariant = {
+        admin: 'error' as const,
+        moderator: 'warning' as const,
+        user: 'default' as const,
+    }
+
+    // Reputation display
+    const getReputationLabel = (score: number) => {
+        if (score >= 50) return 'Critical Risk'
+        if (score >= 20) return 'High Risk'
+        if (score >= 10) return 'Moderate Risk'
+        if (score > 0) return 'Low Risk'
+        return 'Unknown'
+    }
+
+    const getReputationStyle = (score: number) => {
+        if (score >= 50) return 'bg-red-500/10 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+        if (score >= 20) return 'bg-orange-500/10 text-orange-500 border-orange-500/50'
+        if (score >= 10) return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/50'
+        if (score > 0) return 'bg-blue-500/10 text-blue-500 border-blue-500/50'
+        return 'bg-gray-800 text-gray-400 border-gray-700'
+    }
+
+    const veracity = profile.totalReports > 0
+        ? Math.round((profile.verifiedReports / profile.totalReports) * 100)
+        : 0
 
     return (
         <div className="min-h-screen flex flex-col arc-theme-bg text-text-primary">
@@ -71,32 +149,41 @@ export default function PlayerProfilePage() {
                         <div className="flex-shrink-0 text-center">
                             <div className="w-32 h-32 rounded-full bg-bg-elevated border-2 border-accent-primary/50 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,68,68,0.2)]">
                                 <span className="text-4xl font-bold text-accent-primary">
-                                    {username.charAt(0).toUpperCase()}
+                                    {profile.username.charAt(0).toUpperCase()}
                                 </span>
                             </div>
-                            <div className="text-xs text-text-tertiary font-mono">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
+                            <div className="text-xs text-text-tertiary font-mono">ID: {profile.id.slice(0, 9).toUpperCase()}</div>
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 text-center md:text-left">
-                            <h1 className="text-4xl font-bold mb-2 tracking-tight">{username}</h1>
+                            <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                                <h1 className="text-4xl font-bold tracking-tight">{profile.username}</h1>
+                                <Badge variant={roleBadgeVariant[profile.role]} size="sm">
+                                    {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                                </Badge>
+                            </div>
                             <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-6">
                                 <div className="px-3 py-1 bg-bg-tertiary rounded-lg text-sm border border-border-primary">
-                                    <span className="text-text-secondary">Game:</span> <span className="text-white font-medium">Arc Raiders</span>
+                                    <span className="text-text-secondary">Member Since:</span> <span className="text-white font-medium">{formattedDate}</span>
                                 </div>
-                                <div className="px-3 py-1 bg-bg-tertiary rounded-lg text-sm border border-border-primary">
-                                    <span className="text-text-secondary">First Seen:</span> <span className="text-white font-medium">Oct 2025</span>
-                                </div>
+                                {profile.location && (
+                                    <div className="px-3 py-1 bg-bg-tertiary rounded-lg text-sm border border-border-primary">
+                                        <span className="text-text-secondary">Location:</span> <span className="text-white font-medium">{profile.location}</span>
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Bio */}
+                            {profile.bio && (
+                                <p className="text-text-secondary text-sm mb-6 max-w-lg">{profile.bio}</p>
+                            )}
 
                             {/* Threat Level */}
                             <div className="inline-block">
-                                <div className="text-sm text-text-secondary mb-1">Thireat Assessment</div>
-                                <div className={`text-2xl font-bold px-4 py-2 rounded-lg border ${isFakeFriendly
-                                        ? 'bg-red-500/10 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
-                                        : 'bg-gray-800 text-gray-400 border-gray-700'
-                                    }`}>
-                                    {reputationScore}
+                                <div className="text-sm text-text-secondary mb-1">Threat Assessment</div>
+                                <div className={`text-2xl font-bold px-4 py-2 rounded-lg border ${getReputationStyle(profile.reputationScore)}`}>
+                                    {getReputationLabel(profile.reputationScore)}
                                 </div>
                             </div>
                         </div>
@@ -104,64 +191,25 @@ export default function PlayerProfilePage() {
                         {/* Stats Grid */}
                         <div className="grid grid-cols-2 gap-4 text-center">
                             <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
-                                <div className="text-3xl font-bold text-white mb-1">{totalReports}</div>
+                                <div className="text-3xl font-bold text-white mb-1">{profile.totalReports}</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Reports</div>
                             </div>
                             <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
-                                <div className="text-3xl font-bold text-accent-primary mb-1">{isFakeFriendly ? '100%' : '0%'}</div>
+                                <div className="text-3xl font-bold text-accent-primary mb-1">{veracity}%</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Veracity</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Report History */}
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <span className="w-1 h-8 bg-accent-primary rounded-full"></span>
-                    Recent Intelligence
-                </h2>
+                {/* Stats Section - Placeholder for US-002 */}
+                <div className="mb-8">
+                    {/* Stats will be added in US-002 */}
+                </div>
 
-                <div className="space-y-4">
-                    {reports.length > 0 ? (
-                        reports.map((report) => (
-                            <div key={report.id} className="glass-hover rounded-xl p-6 border border-border-primary hover:border-accent-primary/30 transition-all group">
-                                <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <StatusBadge status={report.status} />
-                                        <span className={`px-2 py-1 rounded text-xs font-bold border ${report.severity === 'Critical' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                report.severity === 'High' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                                                    'bg-gray-700 text-gray-300'
-                                            }`}>
-                                            {report.severity.toUpperCase()}
-                                        </span>
-                                        <span className="text-text-tertiary text-sm">• {report.date}</span>
-                                    </div>
-                                    <div className="text-sm font-mono text-text-tertiary">
-                                        REF: {report.id}
-                                    </div>
-                                </div>
-                                <p className="text-text-primary mb-4 leading-relaxed bg-bg-tertiary/30 p-4 rounded-lg">
-                                    "{report.description}"
-                                </p>
-                                <div className="flex justify-between items-center text-sm">
-                                    <div className="text-text-secondary">
-                                        Reported by <span className="text-accent-primary/80 font-medium">{report.reporter}</span>
-                                    </div>
-                                    <div className="group-hover:translate-x-1 transition-transform text-accent-primary font-medium cursor-pointer">
-                                        View Evidence →
-                                    </div>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-20 glass rounded-xl border-dashed border-2 border-border-primary">
-                            <div className="text-6xl mb-4 opacity-20">🛡️</div>
-                            <h3 className="text-xl font-bold text-text-secondary mb-2">No Reports Found</h3>
-                            <p className="text-text-tertiary max-w-md mx-auto">
-                                This player has a clean record... for now. Stay vigilant.
-                            </p>
-                        </div>
-                    )}
+                {/* Recent Activity - Placeholder for US-003 */}
+                <div>
+                    {/* Activity feed will be added in US-003 */}
                 </div>
             </main>
 

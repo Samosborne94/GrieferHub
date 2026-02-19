@@ -1,21 +1,89 @@
 {
-    "project": "GrieferHub",
-    "branchName": "ralph/setup-tasks",
-    "description": "Initial setup tasks for GrieferHub",
-    "userStories": [
-        {
-            "id": "US-001",
-            "title": "Validate Ralph Installation",
-            "description": "As a developer, I need to ensure Ralph is working correctly by having it perform a simple check.",
-            "acceptanceCriteria": [
-                "Create a test file 'ralph-test.txt' in the root",
-                "Add content 'Hello from Ralph' to the file",
-                "Verify file works",
-                "Typecheck passes"
-            ],
-            "priority": 1,
-            "passes": false,
-            "notes": ""
-        }
-    ]
+  "project": "GrieferHub",
+  "branchName": "ralph/user-profile-phase6",
+  "description": "Phase 6 - User Profile System: Wire up existing player profile page with real data, add stats, activity feed, and edit functionality",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Wire player profile page to real API data",
+      "description": "As a user, I want to see real profile data when visiting a player's page. The page already exists at src/app/player/[username]/page.tsx but uses hardcoded mock data. The API endpoint GET /api/users/[username] exists and returns real user data. The AirtableService has getUserByUsername() and getUserProfile() methods. Replace all mock/hardcoded data with real API calls. Use existing components from src/components/common/ (LoadingSpinner, EmptyState). User types are defined in src/types/user.ts (User, UserProfile, UserStats). The page uses a 'Classified Dossier' dark theme - maintain this visual style.",
+      "acceptanceCriteria": [
+        "Page at /player/[username] fetches real user data from /api/users/[username] or via server-side AirtableService.getUserProfile()",
+        "Shows real username and user role badge (User/Moderator/Admin)",
+        "Displays real account creation date in readable format",
+        "Shows loading state while data fetches using existing LoadingSpinner component",
+        "Returns user-friendly 404 message for non-existent usernames using EmptyState component",
+        "Responsive layout maintained on mobile and desktop",
+        "Dark 'Classified Dossier' theme style preserved (bg-gray-900, text-white patterns)",
+        "Placeholder sections remain for stats (US-002) and activity (US-003)",
+        "TypeScript compiles without new errors (pre-existing errors are acceptable)",
+        "npm run build completes successfully",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Add real statistics section to player profile",
+      "description": "As a user, I want to see a player's statistics on their profile. The UserStats type in src/types/user.ts includes: totalReports, verifiedReports, underReviewReports, resolvedReports, rejectedReports, totalComments, reputationScore, joinDate. AirtableService.getUserStats() calculates these. The player page (src/app/player/[username]/page.tsx) already has a stats grid layout with mock data - replace it with real stats. Keep the existing grid card UI style.",
+      "acceptanceCriteria": [
+        "Stats section shows total reports submitted (from UserStats.totalReports)",
+        "Shows verified vs pending report counts (verifiedReports, underReviewReports)",
+        "Shows total comments made (totalComments)",
+        "Shows reputation score (reputationScore)",
+        "Shows account age calculated from joinDate in human-readable format (e.g., '3 months')",
+        "Stats load from AirtableService.getUserStats() or the profile API response",
+        "Gracefully handles zero/empty stats for new users",
+        "TypeScript compiles without new errors",
+        "npm run build completes successfully",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Add recent activity feed to player profile",
+      "description": "As a user, I want to see a player's recent reports and comments on their profile page. The AirtableService has methods for fetching reports. Add a 'Recent Activity' section below the stats on the player profile page (src/app/player/[username]/page.tsx). Show the user's most recent reports with links to the full report pages at /report/[id]. Use the existing report card patterns from src/components/reports/ and Badge/StatusBadge components. The report page pattern is at src/app/report/[id]/page.tsx for reference.",
+      "acceptanceCriteria": [
+        "Shows last 10 reports submitted by the user",
+        "Each report shows title, status badge, and submission date",
+        "Report titles link to /report/[id] pages",
+        "Timestamps shown in relative format (e.g., '2 days ago')",
+        "Shows 'No reports yet' message if user has no reports",
+        "Section has a 'View All' link if user has more than 10 reports",
+        "Maintains dark theme consistent with rest of profile page",
+        "TypeScript compiles without new errors",
+        "npm run build completes successfully",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Add edit profile form for own profile",
+      "description": "As an authenticated user, I want to edit my own profile. The API endpoint PUT /api/users/me/profile already exists with validation (bio max 500 chars, avatar/website/discord/steam fields). The UserProfileUpdate type in src/types/user.ts defines the update shape. Use React Hook Form (already installed) with Zod validation (already installed). Add an 'Edit Profile' button that only appears when viewing your own profile (compare session user with profile user). The edit form can be a modal or inline form on the profile page. Use existing Button component from src/components/common/Button.tsx. Authentication is via NextAuth - use useSession() or getServerSession() to check the logged-in user.",
+      "acceptanceCriteria": [
+        "Edit Profile button visible only when viewing your own profile page",
+        "Edit form includes fields: bio (textarea, max 500 chars), avatar URL, website, Discord username, Steam profile URL",
+        "Form pre-fills with current profile data",
+        "Client-side validation using Zod: bio max 500 chars, URLs validated, fields are optional",
+        "Submits to PUT /api/users/me/profile endpoint",
+        "Shows success feedback after saving",
+        "Shows error message if save fails",
+        "Profile page refreshes/updates with new data after successful save",
+        "TypeScript compiles without new errors",
+        "npm run build completes successfully",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    }
+  ]
 }

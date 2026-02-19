@@ -72,7 +72,7 @@ const FeaturedReportCard = ({ report }: FeaturedReportCardProps) => {
                 <div className="flex-1 space-y-6">
                     {/* Header */}
                     <div className="flex items-center gap-4">
-                        <StatusBadge status={report.status} size="lg" />
+                        <StatusBadge status={report.status} />
                         <span
                             className={`px-4 py-2 rounded-lg border text-sm font-bold ${
                                 report.severity === 'Critical'
