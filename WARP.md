@@ -5,46 +5,47 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 ## Commonly Used Commands
 
 - **Run the development server:**
+
   ```bash
   npm run dev
   ```
-
 - **Create a production build:**
+
   ```bash
   npm run build
   ```
-
 - **Run the production server:**
+
   ```bash
   npm run start
   ```
-
 - **Run linter:**
+
   ```bash
   npm run lint
   ```
-
 - **Fix linting errors:**
+
   ```bash
   npm run lint:fix
   ```
-
 - **Format code with Prettier:**
+
   ```bash
   npm run format
   ```
-
 - **Run tests:**
+
   ```bash
   npm run test
   ```
-
 - **Run tests in watch mode:**
+
   ```bash
   npm run test:watch
   ```
-
 - **Run tests with coverage:**
+
   ```bash
   npm run test:coverage
   ```
@@ -80,3 +81,37 @@ The GrieferHub application is a Next.js project built with TypeScript, Tailwind 
 - Authenticated users can submit new reports, including evidence in the form of images or videos.
 - Users have a personal dashboard to view and manage their submitted reports.
 - Admins and moderators have dedicated dashboards to review and manage all reports and users.
+
+
+
+
+# GrieferHub Warp Oz Agent Protocol
+
+## 🛠 Tech Stack & Environment
+
+- **Framework:** Next.js (App Router), TypeScript, Tailwind CSS
+- **Data:** Airtable (Primary DB), Cloudinary (Media)
+- **Auth:** NextAuth.js
+- **Environment:** Warp Oz Cloud (node:20-alpine)
+
+## 🎯 Agent Role: Lead Developer
+
+You are an autonomous senior developer tasked with implementing features from `prd.json`.
+
+- **Constraint 1:** Always check `prd.json` for the next "passes: false" story.
+- **Constraint 2:** Use existing service methods in `src/lib/services/airtable.ts` for data fetching.
+- **Constraint 3:** Maintain `PROGRESS.md` after every successful build/commit.
+
+## 🔄 Standard Workflow
+
+1. **Pull & Branch:** Ensure you are on the latest feature branch.
+2. **Implement:** Write code that adheres to the established TypeScript patterns.
+3. **Verify:** Run `npm run build` and `npm run lint:fix` before committing.
+4. **Commit:** Use semantic commit messages (e.g., `feat: [StoryID] - Description`).
+5. **Update:** Mark the story as `passes: true` in `prd.json`.
+
+## ⚠️ Safeguards
+
+- Do NOT modify `.env.local` directly; use the Warp Oz Secrets manager for new keys.
+- If a build fails twice, stop and output the error log for manual review.
+- Never delete existing service methods without explicit "Orchestrator" (User) approval.

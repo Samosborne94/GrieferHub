@@ -1,0 +1,37 @@
+# Ralph Progress Log
+Started: Thu Feb 20 2026
+Feature: Phase 6 - User Profile System
+Branch: ralph/user-profile-phase6
+---
+
+## Codebase Patterns
+- Pre-existing TypeScript errors: StatusBadge size prop in FeaturedReports (fixed), others may exist in auth/API routes
+- Player profile page exists at src/app/player/[username]/page.tsx with mock data
+- Backend services ready: AirtableService has getUserByUsername(), getUserProfile(), getUserStats(), updateUserProfile()
+- API routes ready: GET /api/users/[username], GET /api/users/me/profile, PUT /api/users/me/profile
+- Types defined in src/types/user.ts: User, UserProfile, UserProfileUpdate, UserStats
+- Use existing components: LoadingSpinner, EmptyState, Badge, Button from src/components/common/
+- Dark theme pattern: bg-gray-900, text-white, Tailwind CSS throughout
+- React Hook Form + Zod already installed for form handling
+- When creating test files for validation, text files (.txt) don't affect TypeScript compilation
+- API route GET /api/users/[username] returns { success: true, data: PublicProfile } (email stripped)
+- StatusBadge (src/components/reports/StatusBadge.tsx) does NOT accept a size prop
+- Player page uses arc-theme-bg class, not bg-gray-900 directly
+
+---
+
+## 2026-02-20 - US-001
+- Implemented: Wired player profile page to real API data
+- Files changed:
+  - src/app/player/[username]/page.tsx (rewrote with real API fetch, loading/error states)
+  - src/components/home/FeaturedReports.tsx (fixed pre-existing StatusBadge size prop error)
+  - scripts/ralph/prd.json (added Phase 6 PRD)
+  - scripts/ralph/progress.txt (added progress tracking)
+- **Learnings for future iterations:**
+  - The API returns PublicProfile (UserProfile minus email) - use `Omit<UserProfile, 'email'>` for client type
+  - LoadingSpinner supports sizes: sm, md, lg
+  - EmptyState has variants: default, search, filter, error - and pre-built ErrorState component
+  - Badge component has role-appropriate variants: error (admin), warning (moderator), default (user)
+  - The page theme uses `arc-theme-bg` class and `text-text-primary` - follow this pattern
+  - Placeholder sections left as empty divs with comments for US-002 (stats) and US-003 (activity)
+---
