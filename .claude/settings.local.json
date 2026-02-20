@@ -16,7 +16,8 @@
       "WebSearch",
       "Bash(bash scripts/ralph/ralph.sh:*)",
       "Bash(unset:*)",
-      "Bash(env -u CLAUDECODE bash:*)"
+      "Bash(env -u CLAUDECODE bash:*)",
+      "Bash(export:*)"
     ]
   }
 }

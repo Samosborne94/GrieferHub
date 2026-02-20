@@ -85,6 +85,10 @@ export class AirtableService {
                 )
             }
 
+            if (filters?.reporterId) {
+                filterFormulas.push(`{reporter_id} = '${filters.reporterId}'`)
+            }
+
             if (filterFormulas.length > 0) {
                 query = base(TABLES.REPORTS).select({
                     filterByFormula: `AND(${filterFormulas.join(', ')})`,

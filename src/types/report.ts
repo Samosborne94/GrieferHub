@@ -31,6 +31,7 @@ export interface ReportFilters {
     status?: ReportStatus
     severity?: ReportSeverity
     search?: string
+    reporterId?: string
     page?: number
     limit?: number
 }

@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
             status: searchParams.get('status') as any || undefined,
             severity: searchParams.get('severity') as any || undefined,
             search: searchParams.get('search') || undefined,
+            reporterId: searchParams.get('reporterId') || undefined,
         }
 
         const reports = await AirtableService.getReports(filters)
