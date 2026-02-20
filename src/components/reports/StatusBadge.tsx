@@ -1,11 +1,12 @@
 import React from 'react'
 import type { ReportStatus } from '@/types/report'
 
-interface StatusBadgeProps {
+export interface StatusBadgeProps {
     status: ReportStatus
+    size?: 'sm' | 'md' | 'lg'
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
     const statusConfig = {
         'Verified': {
             bg: 'bg-green-500/20',
@@ -31,9 +32,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
     const config = statusConfig[status]
 
+    const sizeClasses = {
+        sm: 'px-2 py-0.5 text-xs',
+        md: 'px-2.5 py-0.5 text-xs',
+        lg: 'px-3 py-1 text-sm',
+    }
+
     return (
         <span className={`
-      inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+      inline-flex items-center rounded-full font-medium
+      ${sizeClasses[size]}
       ${config.bg} ${config.border} ${config.text}
       border
     `}>

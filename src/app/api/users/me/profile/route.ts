@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
+import { authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // PUT /api/users/me/profile - Update own profile
 const updateProfileSchema = z.object({
@@ -14,6 +15,9 @@ const updateProfileSchema = z.object({
 })
 
 export async function PUT(request: NextRequest) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()
@@ -83,6 +87,9 @@ export async function PUT(request: NextRequest) {
 
 // GET /api/users/me/profile - Get own profile
 export async function GET(request: NextRequest) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()

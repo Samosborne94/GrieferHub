@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
+import { authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/reports/me - Get current user's reports
 export async function GET(request: NextRequest) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const session = await requireAuth()
 

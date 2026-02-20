@@ -2,18 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireModerator } from '@/lib/auth'
+import { authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // PATCH /api/mod/reports/[id]/status - Update report status (moderator only)
 const updateStatusSchema = z.object({
     status: z.enum(['Verified', 'Under Review', 'Resolved', 'Rejected']),
+    reviewNotes: z.string().max(2000).optional(),
 })
 
 export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
-        await requireModerator()
+        const session = await requireModerator()
 
         const body = await request.json()
         const validationResult = updateStatusSchema.safeParse(body)
@@ -29,7 +34,7 @@ export async function PATCH(
             )
         }
 
-        const { status } = validationResult.data
+        const { status, reviewNotes } = validationResult.data
 
         // Check if report exists
         const report = await AirtableService.getReportById(params.id)
@@ -43,10 +48,19 @@ export async function PATCH(
             )
         }
 
-        // Update status
+        // Look up reviewer details
+        const reviewerId = session.user?.id || ''
+        const reviewer = await AirtableService.getUserById(reviewerId)
+
+        // Update status with review metadata
         const updatedReport = await AirtableService.updateReportStatus(
             params.id,
-            status
+            status,
+            {
+                reviewedBy: reviewerId,
+                reviewedByName: reviewer?.username,
+                reviewNotes,
+            }
         )
 
         return NextResponse.json({

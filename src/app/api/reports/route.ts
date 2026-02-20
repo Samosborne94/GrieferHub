@@ -2,24 +2,45 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { getServerSession, requireAuth } from '@/lib/auth'
+import { publicLimiter, authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
-// GET /api/reports - List reports with filtering
+// GET /api/reports - List reports with filtering and pagination
 export async function GET(request: NextRequest) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const { searchParams } = new URL(request.url)
+
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+        const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '20')), 100)
+        const sortBy = searchParams.get('sortBy') as any || undefined
+        const order = searchParams.get('order') as any || undefined
 
         const filters = {
             game: searchParams.get('game') || undefined,
             status: searchParams.get('status') as any || undefined,
             severity: searchParams.get('severity') as any || undefined,
             search: searchParams.get('search') || undefined,
+            sortBy,
+            order,
         }
 
-        const reports = await AirtableService.getReports(filters)
+        const allReports = await AirtableService.getReports(filters)
+
+        // In-memory pagination
+        const startIndex = (page - 1) * limit
+        const paginatedReports = allReports.slice(startIndex, startIndex + limit)
 
         return NextResponse.json({
             success: true,
-            data: reports,
+            data: paginatedReports,
+            pagination: {
+                page,
+                limit,
+                total: allReports.length,
+                totalPages: Math.ceil(allReports.length / limit),
+            },
         })
     } catch (error) {
         console.error('Error fetching reports:', error)
@@ -45,6 +66,9 @@ const createReportSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()

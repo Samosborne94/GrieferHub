@@ -12,7 +12,7 @@ interface MockReport {
     date: string
     game: string
     severity: 'Low' | 'Medium' | 'High' | 'Critical'
-    status: 'Verified' | 'Pending' | 'Rejected'
+    status: 'Verified' | 'Under Review' | 'Resolved' | 'Rejected'
     description: string
     reporter: string
 }

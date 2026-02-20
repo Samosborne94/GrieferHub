@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AirtableService } from '@/lib/services/airtable'
+import { publicLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/public/reports - Public API endpoint for fetching verified reports
 export async function GET(request: NextRequest) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const { searchParams } = new URL(request.url)
 

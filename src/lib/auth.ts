@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { getServerSession as getNextAuthSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
 
 /**
  * Hash a password using bcrypt (10 rounds)

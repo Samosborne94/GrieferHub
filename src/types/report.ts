@@ -14,6 +14,10 @@ export interface Report {
     tags?: string[]
     createdAt: Date
     updatedAt: Date
+    reviewedBy?: string
+    reviewedByName?: string
+    reviewNotes?: string
+    reviewedAt?: Date
 }
 
 export interface ReportInput {
@@ -33,4 +37,8 @@ export interface ReportFilters {
     search?: string
     page?: number
     limit?: number
+    sortBy?: 'created_at' | 'updated_at' | 'severity' | 'status'
+    order?: 'asc' | 'desc'
+    unreviewed?: boolean
+    reviewer?: string
 }

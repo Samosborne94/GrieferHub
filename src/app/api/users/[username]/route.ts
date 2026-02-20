@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AirtableService } from '@/lib/services/airtable'
+import { publicLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/users/[username] - Get user profile by username
 export async function GET(
     request: NextRequest,
     { params }: { params: { username: string } }
 ) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const username = params.username
 

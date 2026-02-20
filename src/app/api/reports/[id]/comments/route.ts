@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
+import { publicLimiter, commentLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/reports/[id]/comments - Get all comments for a report
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const reportId = params.id
 
@@ -38,6 +42,9 @@ export async function POST(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await commentLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AirtableService } from '@/lib/services/airtable'
+import { publicLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/public/reports/[id] - Get single verified report
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const report = await AirtableService.getReportById(params.id)
 

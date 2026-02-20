@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth, hasRole } from '@/lib/auth'
+import { publicLimiter, authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // GET /api/reports/[id] - Get single report
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await publicLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const report = await AirtableService.getReportById(params.id)
 
@@ -52,6 +56,9 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const session = await requireAuth()
         const report = await AirtableService.getReportById(params.id)
@@ -66,16 +73,16 @@ export async function PATCH(
             )
         }
 
-        // Check if user is owner or has admin role
+        // Check if user is owner or has moderator/admin role
         const isOwner = report.reporterId === session.user?.id
-        const isAdmin = hasRole(session.user?.role || 'user', 'admin')
+        const isModerator = hasRole(session.user?.role || 'user', 'moderator')
 
-        if (!isOwner && !isAdmin) {
+        if (!isOwner && !isModerator) {
             return NextResponse.json(
                 {
                     success: false,
                     error: 'Forbidden',
-                    message: 'You can only edit your own reports',
+                    message: 'You can only edit your own reports unless you are a moderator or admin',
                 },
                 { status: 403 }
             )
@@ -132,6 +139,9 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const session = await requireAuth()
         const report = await AirtableService.getReportById(params.id)

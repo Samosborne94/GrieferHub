@@ -8,6 +8,7 @@ import type { FieldSet, Records } from 'airtable'
  * Transform Airtable record to Report object
  */
 function transformReport(record: any): Report {
+    const reviewedAt = record.get('reviewed_at')
     return {
         id: record.id,
         reporterId: record.get('reporter_id'),
@@ -21,7 +22,18 @@ function transformReport(record: any): Report {
         tags: record.get('tags') || [],
         createdAt: new Date(record.get('created_at')),
         updatedAt: new Date(record.get('updated_at')),
+        reviewedBy: record.get('reviewed_by') || undefined,
+        reviewedByName: record.get('reviewed_by_name') || undefined,
+        reviewNotes: record.get('review_notes') || undefined,
+        reviewedAt: reviewedAt ? new Date(reviewedAt) : undefined,
     }
+}
+
+/**
+ * Sanitize a string for use in Airtable formula (escape single quotes)
+ */
+function sanitizeForFormula(value: string): string {
+    return value.replace(/'/g, "\\'")
 }
 
 /**
@@ -60,38 +72,55 @@ export class AirtableService {
      */
     static async getReports(filters?: ReportFilters): Promise<Report[]> {
         try {
-            let query = base(TABLES.REPORTS).select({
-                sort: [{ field: 'created_at', direction: 'desc' }],
-            })
+            // Determine sort field and direction
+            const sortFieldMap: Record<string, string> = {
+                created_at: 'created_at',
+                updated_at: 'updated_at',
+                severity: 'severity',
+                status: 'status',
+            }
+            const sortField = sortFieldMap[filters?.sortBy || 'created_at'] || 'created_at'
+            const sortDirection = filters?.order === 'asc' ? 'asc' : 'desc'
 
             // Build filter formula
             const filterFormulas: string[] = []
 
             if (filters?.game) {
-                filterFormulas.push(`{game} = '${filters.game}'`)
+                filterFormulas.push(`{game} = '${sanitizeForFormula(filters.game)}'`)
             }
 
             if (filters?.status) {
-                filterFormulas.push(`{status} = '${filters.status}'`)
+                filterFormulas.push(`{status} = '${sanitizeForFormula(filters.status)}'`)
             }
 
             if (filters?.severity) {
-                filterFormulas.push(`{severity} = '${filters.severity}'`)
+                filterFormulas.push(`{severity} = '${sanitizeForFormula(filters.severity)}'`)
             }
 
             if (filters?.search) {
+                const sanitized = sanitizeForFormula(filters.search)
                 filterFormulas.push(
-                    `OR(FIND(LOWER('${filters.search}'), LOWER({griefer_name})), FIND(LOWER('${filters.search}'), LOWER({description})))`
+                    `OR(FIND(LOWER('${sanitized}'), LOWER({griefer_name})), FIND(LOWER('${sanitized}'), LOWER({description})))`
                 )
             }
 
-            if (filterFormulas.length > 0) {
-                query = base(TABLES.REPORTS).select({
-                    filterByFormula: `AND(${filterFormulas.join(', ')})`,
-                    sort: [{ field: 'created_at', direction: 'desc' }],
-                })
+            if (filters?.unreviewed) {
+                filterFormulas.push(`OR({status} = 'Under Review', {status} = 'Verified')`)
             }
 
+            if (filters?.reviewer) {
+                filterFormulas.push(`{reviewed_by} = '${sanitizeForFormula(filters.reviewer)}'`)
+            }
+
+            const selectOptions: any = {
+                sort: [{ field: sortField, direction: sortDirection }],
+            }
+
+            if (filterFormulas.length > 0) {
+                selectOptions.filterByFormula = `AND(${filterFormulas.join(', ')})`
+            }
+
+            const query = base(TABLES.REPORTS).select(selectOptions)
             const records = await query.all()
             return records.map(transformReport)
         } catch (error) {
@@ -245,18 +274,67 @@ export class AirtableService {
      */
     static async updateReportStatus(
         id: string,
-        status: Report['status']
+        status: Report['status'],
+        reviewData?: { reviewedBy?: string; reviewedByName?: string; reviewNotes?: string }
     ): Promise<Report> {
         try {
-            const record = await base(TABLES.REPORTS).update(id, {
+            const updateFields: any = {
                 status,
                 updated_at: new Date().toISOString(),
-            })
+            }
+
+            if (reviewData) {
+                if (reviewData.reviewedBy) updateFields.reviewed_by = reviewData.reviewedBy
+                if (reviewData.reviewedByName) updateFields.reviewed_by_name = reviewData.reviewedByName
+                if (reviewData.reviewNotes) updateFields.review_notes = reviewData.reviewNotes
+                updateFields.reviewed_at = new Date().toISOString()
+            }
+
+            const record = await base(TABLES.REPORTS).update(id, updateFields)
 
             return transformReport(record)
         } catch (error) {
             console.error('Error updating report status:', error)
             throw new Error('Failed to update report status')
+        }
+    }
+
+    /**
+     * Search reports across configurable fields
+     */
+    static async searchReports(
+        query: string,
+        fields: string[] = ['username', 'description', 'game']
+    ): Promise<Report[]> {
+        try {
+            const sanitized = sanitizeForFormula(query)
+
+            const fieldMap: Record<string, string> = {
+                username: 'griefer_name',
+                description: 'description',
+                game: 'game',
+            }
+
+            const searchFormulas = fields
+                .map(f => fieldMap[f])
+                .filter(Boolean)
+                .map(col => `FIND(LOWER('${sanitized}'), LOWER({${col}}))`)
+
+            if (searchFormulas.length === 0) {
+                return []
+            }
+
+            const records = await base(TABLES.REPORTS)
+                .select({
+                    filterByFormula: `OR(${searchFormulas.join(', ')})`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                })
+                .all()
+
+            return records.map(transformReport)
+        } catch (error) {
+            console.error('Error searching reports:', error)
+            throw new Error('Failed to search reports')
         }
     }
 
@@ -276,12 +354,31 @@ export class AirtableService {
     /**
      * Get all users (admin only)
      */
-    static async getAllUsers(): Promise<User[]> {
+    static async getAllUsers(filters?: { role?: string; search?: string }): Promise<User[]> {
         try {
+            const filterFormulas: string[] = []
+
+            if (filters?.role) {
+                filterFormulas.push(`{role} = '${sanitizeForFormula(filters.role)}'`)
+            }
+
+            if (filters?.search) {
+                const sanitized = sanitizeForFormula(filters.search)
+                filterFormulas.push(
+                    `OR(FIND(LOWER('${sanitized}'), LOWER({username})), FIND(LOWER('${sanitized}'), LOWER({email})))`
+                )
+            }
+
+            const selectOptions: any = {
+                sort: [{ field: 'created_at', direction: 'desc' }],
+            }
+
+            if (filterFormulas.length > 0) {
+                selectOptions.filterByFormula = `AND(${filterFormulas.join(', ')})`
+            }
+
             const records = await base(TABLES.USERS)
-                .select({
-                    sort: [{ field: 'created_at', direction: 'desc' }],
-                })
+                .select(selectOptions)
                 .all()
 
             return records.map(transformUser)

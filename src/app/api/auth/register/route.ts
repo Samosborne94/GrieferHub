@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { hashPassword } from '@/lib/auth'
+import { loginLimiter } from '@/lib/middleware/rateLimit'
 
 // Validation schema
 const registerSchema = z.object({
@@ -11,6 +12,9 @@ const registerSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+    const rateLimitResult = await loginLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         const body = await request.json()
 

@@ -3,6 +3,7 @@ import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import { uploadImage, uploadVideo } from '@/lib/services/cloudinary'
 import { requireAuth } from '@/lib/auth'
+import { uploadLimiter } from '@/lib/middleware/rateLimit'
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
@@ -11,6 +12,9 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
 
 export async function POST(request: NextRequest) {
+    const rateLimitResult = await uploadLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         await requireAuth()

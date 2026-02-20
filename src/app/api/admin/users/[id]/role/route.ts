@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAdmin } from '@/lib/auth'
+import { authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // PATCH /api/admin/users/[id]/role - Update user role (admin only)
 const updateRoleSchema = z.object({
@@ -12,6 +13,9 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         await requireAdmin()
 

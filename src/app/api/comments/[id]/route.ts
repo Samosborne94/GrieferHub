@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
+import { authenticatedLimiter } from '@/lib/middleware/rateLimit'
 
 // PUT /api/comments/[id] - Update a comment
 const updateCommentSchema = z.object({
@@ -12,6 +13,9 @@ export async function PUT(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()
@@ -101,6 +105,9 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const rateLimitResult = await authenticatedLimiter(request)
+    if (rateLimitResult) return rateLimitResult
+
     try {
         // Require authentication
         const session = await requireAuth()

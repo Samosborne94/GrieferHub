@@ -222,3 +222,24 @@ export const commentLimiter = createRateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     message: 'You are posting comments too quickly. Please slow down.',
 })
+
+// Public endpoint limiter (100 requests per 15 minutes per IP)
+export const publicLimiter = createRateLimiter({
+    max: 100,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    message: 'Too many requests. Please try again later.',
+})
+
+// Authenticated endpoint limiter (300 requests per 15 minutes per IP)
+export const authenticatedLimiter = createRateLimiter({
+    max: 300,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    message: 'Too many requests. Please try again later.',
+})
+
+// Upload limiter (20 uploads per hour per IP)
+export const uploadLimiter = createRateLimiter({
+    max: 20,
+    windowMs: 60 * 60 * 1000, // 1 hour
+    message: 'Too many uploads. Please try again later.',
+})
