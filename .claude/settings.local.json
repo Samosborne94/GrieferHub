@@ -8,7 +8,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh pr view:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm run build:*)",
+      "Bash(gh api:*)",
+      "Bash(git config:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(GIT_COMMITTER_EMAIL=\"47032167+Samosborne94@users.noreply.github.com\" git commit:*)"
     ]
   }
 }
