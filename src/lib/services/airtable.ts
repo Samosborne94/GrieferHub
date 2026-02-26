@@ -266,6 +266,46 @@ export class AirtableService {
     }
 
     /**
+     * Get recent reports by user (limited)
+     */
+    static async getRecentReportsByUserId(userId: string, limit: number = 5): Promise<Report[]> {
+        try {
+            const records = await base(TABLES.REPORTS)
+                .select({
+                    filterByFormula: `{reporter_id} = '${userId}'`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                    maxRecords: limit,
+                })
+                .all()
+
+            return records.map(transformReport)
+        } catch (error) {
+            console.error('Error fetching recent user reports:', error)
+            throw new Error('Failed to fetch recent user reports')
+        }
+    }
+
+    /**
+     * Get recent comments by user (limited)
+     */
+    static async getRecentCommentsByUserId(userId: string, limit: number = 5): Promise<Comment[]> {
+        try {
+            const records = await base(TABLES.COMMENTS)
+                .select({
+                    filterByFormula: `{author_id} = '${userId}'`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                    maxRecords: limit,
+                })
+                .all()
+
+            return records.map(transformComment)
+        } catch (error) {
+            console.error('Error fetching recent user comments:', error)
+            throw new Error('Failed to fetch recent user comments')
+        }
+    }
+
+    /**
      * Update report status (moderator/admin only)
      */
     static async updateReportStatus(

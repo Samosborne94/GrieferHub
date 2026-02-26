@@ -8,10 +8,23 @@ import { Button } from '@/components/common/Button'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { z } from 'zod'
+import Link from 'next/link'
 import type { UserProfile } from '@/types/user'
+import type { Report } from '@/types/report'
+import type { Comment } from '@/types/comment'
 
 interface ProfileData extends Omit<UserProfile, 'email' | 'createdAt'> {
     createdAt: string
+}
+
+interface ActivityComment extends Omit<Comment, 'createdAt' | 'updatedAt'> {
+    createdAt: string
+    updatedAt: string
+}
+
+interface ActivityReport extends Omit<Report, 'createdAt' | 'updatedAt'> {
+    createdAt: string
+    updatedAt: string
 }
 
 function getRoleBadge(role: string) {
@@ -30,6 +43,19 @@ function getThreatLevel(reputationScore: number) {
     if (reputationScore >= 20) return { label: 'Established', className: 'bg-blue-500/10 text-blue-500 border-blue-500/50' }
     if (reputationScore >= 1) return { label: 'New', className: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/50' }
     return { label: 'Unknown', className: 'bg-gray-800 text-gray-400 border-gray-700' }
+}
+
+function timeAgo(dateStr: string) {
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 30) return `${days}d ago`
+    const months = Math.floor(days / 30)
+    return `${months}mo ago`
 }
 
 function formatJoinDate(dateStr: string) {
@@ -78,6 +104,8 @@ export default function PlayerProfilePage() {
     const [formErrors, setFormErrors] = useState<EditFormErrors>({})
 
     const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const [recentReports, setRecentReports] = useState<ActivityReport[]>([])
+    const [recentComments, setRecentComments] = useState<ActivityComment[]>([])
 
     const isOwnProfile = session?.user?.name === username
 
@@ -133,6 +161,18 @@ export default function PlayerProfilePage() {
                 }
 
                 setProfile(json.data)
+
+                // Fetch recent activity
+                try {
+                    const actRes = await fetch(`/api/users/${encodeURIComponent(username)}/activity`)
+                    const actJson = await actRes.json()
+                    if (actRes.ok && actJson.success) {
+                        setRecentReports(actJson.data.reports || [])
+                        setRecentComments(actJson.data.comments || [])
+                    }
+                } catch {
+                    // Activity fetch is non-critical, silently ignore
+                }
             } catch {
                 setError('Failed to load profile')
             } finally {
@@ -497,6 +537,88 @@ export default function PlayerProfilePage() {
                         )}
                     </div>
                 )}
+
+                {/* Recent Reports */}
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                        <span className="w-1 h-8 bg-accent-primary rounded-full"></span>
+                        Recent Reports
+                    </h2>
+                    {recentReports.length > 0 ? (
+                        <div className="space-y-3">
+                            {recentReports.map((report) => (
+                                <Link
+                                    key={report.id}
+                                    href={`/report/${report.id}`}
+                                    className="block glass-hover rounded-xl p-4 border border-border-primary hover:border-accent-primary/30 transition-all"
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-text-primary font-medium">{report.grieferName}</span>
+                                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-bg-tertiary border border-border-primary text-text-secondary">
+                                                {report.game}
+                                            </span>
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
+                                                report.severity === 'Critical' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                report.severity === 'High' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                                                report.severity === 'Medium' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                                'bg-gray-700 text-gray-300 border-gray-600'
+                                            }`}>
+                                                {report.severity}
+                                            </span>
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                                                report.status === 'Verified' ? 'bg-green-500/20 text-green-500 border-green-500' :
+                                                report.status === 'Rejected' ? 'bg-red-500/20 text-red-500 border-red-500' :
+                                                report.status === 'Resolved' ? 'bg-blue-500/20 text-blue-500 border-blue-500' :
+                                                'bg-yellow-500/20 text-yellow-500 border-yellow-500'
+                                            }`}>
+                                                {report.status}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-text-tertiary">{timeAgo(report.createdAt)}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 glass rounded-xl border border-border-primary">
+                            <p className="text-text-tertiary">No reports submitted yet.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Recent Comments */}
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                        <span className="w-1 h-8 bg-blue-500 rounded-full"></span>
+                        Recent Comments
+                    </h2>
+                    {recentComments.length > 0 ? (
+                        <div className="space-y-3">
+                            {recentComments.map((comment) => (
+                                <Link
+                                    key={comment.id}
+                                    href={`/report/${comment.reportId}`}
+                                    className="block glass-hover rounded-xl p-4 border border-border-primary hover:border-blue-500/30 transition-all"
+                                >
+                                    <p className="text-text-primary text-sm mb-2 line-clamp-2">
+                                        {comment.content}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-text-tertiary">
+                                            on report {comment.reportId}
+                                        </span>
+                                        <span className="text-xs text-text-tertiary">{timeAgo(comment.createdAt)}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 glass rounded-xl border border-border-primary">
+                            <p className="text-text-tertiary">No comments yet.</p>
+                        </div>
+                    )}
+                </div>
             </main>
 
             <Footer />
