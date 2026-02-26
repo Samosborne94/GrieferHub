@@ -49,7 +49,13 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report }) => {
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0 pr-4">
                         <h3 className="text-lg font-bold text-text-primary group-hover:text-accent-primary transition-colors duration-200 truncate">
-                            {report.grieferName}
+                            <Link
+                                href={`/griefer/${encodeURIComponent(report.grieferName)}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hover:underline hover:text-red-400 transition-colors"
+                            >
+                                {report.grieferName}
+                            </Link>
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-sm text-text-tertiary">{report.game}</span>
