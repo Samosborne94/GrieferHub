@@ -1,28 +1,19 @@
 # Ralph Progress Log
-Started: Wed Jan 21 19:51:30 AEDT 2026
+Started: Thu Feb 26 2026
 ---
 
 ## Codebase Patterns
 - Pre-existing TypeScript errors exist in: auth routes, API key routes, player pages, and airtable services
-- Many uncommitted changes exist in the repository at the start of Ralph iteration
-- When creating test files for validation, text files (.txt) don't affect TypeScript compilation
+- All Airtable operations go through src/lib/services/airtable.ts - never call Airtable directly
+- Use airtable-client.ts table constants (USERS, REPORTS, COMMENTS, API_KEYS) for table references
+- Components use dark theme classes: text-text-primary, text-text-secondary, bg-bg-elevated, etc.
+- API responses follow format: { success: boolean, data?: T, error?: string, message?: string }
+- Auth checks use getServerSession() with authOptions from src/lib/auth.ts
+- Forms use React Hook Form + Zod validation pattern
+- Client-side data fetching uses SWR or fetch in useEffect
+- Cloudinary service at src/lib/services/cloudinary.ts handles media uploads
+- UserProfile type already has bio, avatar, location, website, discord, steam fields
+- Player page at /player/[username] currently has hardcoded mock data that needs replacing
+- Notifications table may not exist in Airtable yet - will need manual provisioning
 
----
-
-## 2026-01-21 19:55 - US-001
-- Implemented validation task: Created ralph-test.txt with "Hello from Ralph" content
-- Files changed:
-  - ralph-test.txt (created)
-  - scripts/ralph/prd.json (updated passes: true)
-  - scripts/ralph/progress.txt (this file)
-- **Learnings for future iterations:**
-  - Repository has pre-existing TypeScript errors that need addressing separately:
-    - .next/types/app/api/auth/[...nextauth]/route.ts - authOptions type errors
-    - src/app/api/keys routes - authOptions import errors
-    - src/app/player/[username]/page.tsx - ReportStatus type mismatch
-    - src/components/home/FeaturedReports.tsx - StatusBadge size prop error
-    - src/lib/services/airtable.ts - Airtable API type errors
-  - The codebase has many uncommitted changes on master branch
-  - Branch ralph/setup-tasks was created from master as required by PRD
-  - Ralph automation is working correctly and can commit changes
 ---

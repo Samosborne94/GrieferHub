@@ -1,21 +1,267 @@
 {
-    "project": "GrieferHub",
-    "branchName": "ralph/setup-tasks",
-    "description": "Initial setup tasks for GrieferHub",
-    "userStories": [
-        {
-            "id": "US-001",
-            "title": "Validate Ralph Installation",
-            "description": "As a developer, I need to ensure Ralph is working correctly by having it perform a simple check.",
-            "acceptanceCriteria": [
-                "Create a test file 'ralph-test.txt' in the root",
-                "Add content 'Hello from Ralph' to the file",
-                "Verify file works",
-                "Typecheck passes"
-            ],
-            "priority": 1,
-            "passes": true,
-            "notes": "Completed successfully. Note: Pre-existing TypeScript errors in codebase are unrelated to this change."
-        }
-    ]
+  "project": "GrieferHub",
+  "branchName": "ralph/phase-6-community",
+  "description": "Phase 6 Community Features - User profiles, griefer profiles, notifications, analytics, and Discord webhooks",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Connect player profile page to real API",
+      "description": "As a user, I want to see real profile data when visiting a player page so that profiles show actual information instead of mock data.",
+      "acceptanceCriteria": [
+        "Player page at /player/[username] fetches data from GET /api/users/[username]",
+        "Displays real username, role badge, and join date from API",
+        "Shows real stats (reports submitted, verified count, comments count, reputation score)",
+        "Shows loading state while fetching",
+        "Shows error/not-found state for invalid usernames",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Mock page exists at src/app/player/[username]/page.tsx with hardcoded data for 'trustme'. API at /api/users/[username] and service functions getUserByUsername/getUserStats/getUserProfile already exist in airtable.ts."
+    },
+    {
+      "id": "US-002",
+      "title": "Display profile details and social links",
+      "description": "As a user, I want to see bio, location, and social links on player profiles so I can learn more about community members.",
+      "acceptanceCriteria": [
+        "Profile page shows bio text if set",
+        "Shows location if set",
+        "Shows social links section with website, Discord username, and Steam profile",
+        "Social links open in new tab",
+        "Empty fields are hidden, not shown as blank",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "UserProfile type in src/types/user.ts already has bio, avatar, location, website, discord, steam fields. getUserProfile in airtable.ts fetches these."
+    },
+    {
+      "id": "US-003",
+      "title": "Add edit profile form",
+      "description": "As a user, I want to edit my own profile (bio, location, social links) so I can customize how I appear to the community.",
+      "acceptanceCriteria": [
+        "Edit button visible only when viewing own profile",
+        "Edit form with fields: bio (max 500 chars), location, website URL, Discord username, Steam profile URL",
+        "Form validates inputs with Zod (URL format for website/steam, character limits)",
+        "Submits to PUT /api/users/me/profile",
+        "Shows success/error feedback after save",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "PUT /api/users/me/profile endpoint and updateUserProfile service function already exist. UserProfileUpdate type defined in src/types/user.ts. Follow existing form patterns (React Hook Form + Zod) from submit report page."
+    },
+    {
+      "id": "US-004",
+      "title": "Add avatar upload to profile",
+      "description": "As a user, I want to upload a profile avatar so my profile has a personal image.",
+      "acceptanceCriteria": [
+        "Avatar upload button on edit profile form",
+        "Accepts image files (jpg, png, webp) up to 2MB",
+        "Uploads to Cloudinary via existing cloudinary service",
+        "Avatar URL saved to user profile in Airtable",
+        "Avatar displayed on profile page with fallback to default icon",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Cloudinary service exists at src/lib/services/cloudinary.ts. Follow evidence upload pattern from report submission for the upload flow."
+    },
+    {
+      "id": "US-005",
+      "title": "Display recent activity on player profile",
+      "description": "As a user, I want to see a player's recent reports and comments on their profile so I can see their community contributions.",
+      "acceptanceCriteria": [
+        "Profile page shows 'Recent Reports' section with last 5 reports by this user",
+        "Each report shows title, game, severity badge, status badge, and date",
+        "Reports link to full report page",
+        "Profile page shows 'Recent Comments' section with last 5 comments",
+        "Each comment shows snippet, linked report title, and date",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "May need new service functions to fetch reports by reporter_id and comments by author_id with limit parameter. Existing getReports has filtering support."
+    },
+    {
+      "id": "US-006",
+      "title": "Add griefer aggregation service functions",
+      "description": "As a developer, I need service functions to aggregate all reports about a specific griefer so the griefer profile page can display meaningful data.",
+      "acceptanceCriteria": [
+        "Add getReportsByGrieferName(name) function to airtable.ts that fetches all reports matching a griefer name (case-insensitive)",
+        "Add getGrieferStats(name) function that returns: total reports, severity breakdown, game breakdown, status breakdown, first/last reported dates",
+        "Add getGrieferRiskScore(stats) function that calculates risk level (Low/Medium/High/Critical) based on report count and severity distribution",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Follow existing service function patterns in src/lib/services/airtable.ts. Airtable filterByFormula supports LOWER() for case-insensitive matching."
+    },
+    {
+      "id": "US-007",
+      "title": "Create griefer profile API route",
+      "description": "As a developer, I need an API endpoint to fetch griefer profile data so the frontend can display griefer profiles.",
+      "acceptanceCriteria": [
+        "GET /api/griefers/[name] returns aggregated griefer data",
+        "Response includes: griefer name, risk score, stats, and paginated report list",
+        "Returns 404 if no reports found for that griefer name",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Create at src/app/api/griefers/[name]/route.ts. Follow existing API route patterns (NextResponse.json, error handling)."
+    },
+    {
+      "id": "US-008",
+      "title": "Create griefer profile page",
+      "description": "As a user, I want to view a griefer's profile page showing all reports and risk assessment so I can quickly evaluate a reported player.",
+      "acceptanceCriteria": [
+        "Page at /griefer/[name] fetches data from GET /api/griefers/[name]",
+        "Shows griefer name and risk level badge (color-coded)",
+        "Displays stats: total reports, severity breakdown, games reported in",
+        "Lists all reports about this griefer with status/severity badges",
+        "Loading and not-found states handled",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Follow dark theme styling from existing pages. Use existing StatusBadge and SeverityBadge components for report list items."
+    },
+    {
+      "id": "US-009",
+      "title": "Link report cards to griefer profiles",
+      "description": "As a user, I want to click a griefer's name on any report card to navigate to their griefer profile.",
+      "acceptanceCriteria": [
+        "Griefer name on ReportCard component is a clickable link",
+        "Link navigates to /griefer/[grieferName]",
+        "Griefer name link styled distinctly (underline or color) to indicate clickability",
+        "Links work on Intel Board, Dashboard, and Report Detail pages",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "ReportCard component at src/components/reports/ReportCard.tsx. Use Next.js Link component."
+    },
+    {
+      "id": "US-010",
+      "title": "Add notification types and service layer",
+      "description": "As a developer, I need a notification data model and service functions so the system can create and manage user notifications.",
+      "acceptanceCriteria": [
+        "Add Notification type to src/types/ with fields: id, userId, type (report_status_change | comment_reply | report_verified | report_rejected), title, message, relatedReportId, isRead, createdAt",
+        "Add NOTIFICATIONS table name to airtable-client.ts",
+        "Add createNotification(), getUserNotifications(userId, limit), markNotificationRead(id), markAllNotificationsRead(userId), getUnreadCount(userId) to airtable.ts",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Requires Notifications table in Airtable with matching fields. Follow existing service function patterns. Table may not exist yet in Airtable - add a note in progress.txt if so."
+    },
+    {
+      "id": "US-011",
+      "title": "Add notification API routes",
+      "description": "As a developer, I need API endpoints for notifications so the frontend can fetch and manage them.",
+      "acceptanceCriteria": [
+        "GET /api/notifications returns current user's notifications (paginated, newest first)",
+        "GET /api/notifications/unread-count returns unread count",
+        "PUT /api/notifications/[id]/read marks a single notification as read",
+        "PUT /api/notifications/read-all marks all notifications as read",
+        "All endpoints require authentication",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Create routes under src/app/api/notifications/. Use getServerSession for auth check, following existing protected route patterns."
+    },
+    {
+      "id": "US-012",
+      "title": "Add notification bell to site header",
+      "description": "As a user, I want to see a notification bell icon with unread count in the header so I know when I have new notifications.",
+      "acceptanceCriteria": [
+        "Bell icon visible in header/navbar for logged-in users",
+        "Shows unread count badge (red dot with number) when count > 0",
+        "Clicking bell opens dropdown with last 5 notifications",
+        "Each notification shows title, message snippet, and relative time",
+        "Unread notifications visually distinct from read ones",
+        "'View all' link at bottom navigates to full notifications page",
+        "Clicking a notification marks it as read and navigates to related report",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Add to existing Navbar/Header component. Use SWR for polling unread count. Follow existing component patterns."
+    },
+    {
+      "id": "US-013",
+      "title": "Trigger notifications on report status changes",
+      "description": "As a user, I want to receive notifications when my report's status changes so I stay informed about moderation decisions.",
+      "acceptanceCriteria": [
+        "When admin/mod changes report status, a notification is created for the report author",
+        "Notification includes old status, new status, and report title",
+        "Notification type is 'report_status_change' for general changes, 'report_verified' when verified, 'report_rejected' when rejected",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Hook into existing report status update logic in admin dashboard or report API routes. Create notification using createNotification service function."
+    },
+    {
+      "id": "US-014",
+      "title": "Add analytics aggregation service",
+      "description": "As a developer, I need analytics aggregation functions so the analytics dashboard can display platform-wide statistics.",
+      "acceptanceCriteria": [
+        "Add getAnalyticsOverview() function returning: total reports, reports by status, reports by severity, reports by game, total users, total comments",
+        "Add getTopReporters(limit) function returning top users by verified report count",
+        "Add getRecentActivity(limit) function returning most recent reports and comments",
+        "All functions use existing Airtable service patterns",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Add to src/lib/services/airtable.ts. Some stats (like reports by game) require fetching all reports and aggregating in JS since Airtable doesn't support GROUP BY."
+    },
+    {
+      "id": "US-015",
+      "title": "Create admin analytics dashboard page",
+      "description": "As an admin, I want an analytics dashboard showing platform statistics so I can understand community health and trends.",
+      "acceptanceCriteria": [
+        "Page at /admin/analytics accessible only to admin users",
+        "Shows overview cards: total reports, total users, total comments, verification rate",
+        "Shows reports by game breakdown (bar or list)",
+        "Shows reports by severity breakdown (color-coded)",
+        "Shows reports by status breakdown",
+        "Shows top 10 reporters leaderboard",
+        "Shows recent activity feed",
+        "Loading state while data fetches",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Create at src/app/admin/analytics/page.tsx. Follow admin page pattern from src/app/admin/page.tsx for auth checks. Use Tailwind for simple chart-like visuals (progress bars, stat cards) rather than adding a chart library."
+    },
+    {
+      "id": "US-016",
+      "title": "Add Discord webhook notification endpoint",
+      "description": "As an admin, I want verified reports to send a Discord webhook notification so our Discord community stays informed about new verified griefers.",
+      "acceptanceCriteria": [
+        "Add DISCORD_WEBHOOK_URL to env config and .env.example",
+        "Add sendDiscordWebhook(report) utility function that sends a Discord embed with report details",
+        "Webhook fires when a report status changes to 'Verified'",
+        "Discord embed includes: griefer name, game, severity, reporter, and link to report",
+        "Gracefully handles missing webhook URL (skips without error)",
+        "Gracefully handles webhook delivery failures (logs error, does not block status change)",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "Discord webhooks are simple POST requests with JSON body - no Discord.js library needed. Add to the same status change flow as notification creation (US-013)."
+    }
+  ]
 }
