@@ -3,6 +3,7 @@ import type { Report, ReportInput, ReportFilters } from '@/types/report'
 import type { User, UserInput, UserProfile, UserProfileUpdate, UserStats } from '@/types/user'
 import type { Comment, CommentInput } from '@/types/comment'
 import type { ApiKey, ApiKeyInput, ApiKeyWithKey, ApiKeyListItem } from '@/types/apiKey'
+import type { Notification, NotificationType } from '@/types/notification'
 import type { FieldSet, Records } from 'airtable'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
@@ -650,6 +651,136 @@ export class AirtableService {
         if (criticalCount >= 1 || highCount >= 3 || totalReports >= 5) return 'High'
         if (highCount >= 1 || totalReports >= 3) return 'Medium'
         return 'Low'
+    }
+
+    // ===== NOTIFICATIONS (Phase 6) =====
+
+    /**
+     * Create a notification
+     */
+    static async createNotification(data: {
+        userId: string
+        type: NotificationType
+        title: string
+        message: string
+        relatedReportId?: string
+    }): Promise<Notification> {
+        try {
+            const record = await base(TABLES.NOTIFICATIONS).create({
+                user_id: data.userId,
+                type: data.type,
+                title: data.title,
+                message: data.message,
+                related_report_id: data.relatedReportId || '',
+                is_read: false,
+            } as any)
+
+            return {
+                id: record.id,
+                userId: data.userId,
+                type: data.type,
+                title: data.title,
+                message: data.message,
+                relatedReportId: data.relatedReportId,
+                isRead: false,
+                createdAt: new Date(),
+            }
+        } catch (error) {
+            console.error('Error creating notification:', error)
+            throw new Error('Failed to create notification')
+        }
+    }
+
+    /**
+     * Get notifications for a user
+     */
+    static async getUserNotifications(userId: string, limit: number = 20): Promise<Notification[]> {
+        try {
+            const records = await base(TABLES.NOTIFICATIONS)
+                .select({
+                    filterByFormula: `{user_id} = '${userId}'`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                    maxRecords: limit,
+                })
+                .all()
+
+            return records.map(record => ({
+                id: record.id,
+                userId: record.get('user_id') as string,
+                type: record.get('type') as NotificationType,
+                title: record.get('title') as string,
+                message: record.get('message') as string,
+                relatedReportId: (record.get('related_report_id') as string) || undefined,
+                isRead: (record.get('is_read') as boolean) || false,
+                createdAt: new Date(record.get('created_at') as string),
+            }))
+        } catch (error) {
+            console.error('Error fetching user notifications:', error)
+            throw new Error('Failed to fetch notifications')
+        }
+    }
+
+    /**
+     * Mark a single notification as read
+     */
+    static async markNotificationRead(id: string): Promise<void> {
+        try {
+            await base(TABLES.NOTIFICATIONS).update(id, { is_read: true } as any)
+        } catch (error) {
+            console.error('Error marking notification as read:', error)
+            throw new Error('Failed to mark notification as read')
+        }
+    }
+
+    /**
+     * Mark all notifications as read for a user
+     */
+    static async markAllNotificationsRead(userId: string): Promise<void> {
+        try {
+            const records = await base(TABLES.NOTIFICATIONS)
+                .select({
+                    filterByFormula: `AND({user_id} = '${userId}', NOT({is_read}))`,
+                })
+                .all()
+
+            if (records.length === 0) return
+
+            // Airtable batch update (max 10 per call)
+            const batches = []
+            for (let i = 0; i < records.length; i += 10) {
+                batches.push(records.slice(i, i + 10))
+            }
+
+            for (const batch of batches) {
+                await base(TABLES.NOTIFICATIONS).update(
+                    batch.map(record => ({
+                        id: record.id,
+                        fields: { is_read: true },
+                    }))
+                )
+            }
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error)
+            throw new Error('Failed to mark all notifications as read')
+        }
+    }
+
+    /**
+     * Get unread notification count for a user
+     */
+    static async getUnreadNotificationCount(userId: string): Promise<number> {
+        try {
+            const records = await base(TABLES.NOTIFICATIONS)
+                .select({
+                    filterByFormula: `AND({user_id} = '${userId}', NOT({is_read}))`,
+                })
+                .all()
+
+            return records.length
+        } catch (error) {
+            console.error('Error counting unread notifications:', error)
+            return 0
+        }
     }
 
     // ===== API KEY MANAGEMENT (Phase 8) =====

@@ -22,4 +22,5 @@ export const TABLES = {
     REPORTS: 'Reports',
     COMMENTS: 'Comments',
     API_KEYS: 'API_Keys',
+    NOTIFICATIONS: 'Notifications',
 } as const
