@@ -17,3 +17,20 @@ Started: Thu Feb 26 2026
 - Notifications table may not exist in Airtable yet - will need manual provisioning
 
 ---
+
+## 2026-02-26 - US-001: Connect player profile page to real API
+- Replaced all hardcoded mock data in /player/[username]/page.tsx with live fetch from /api/users/[username]
+- Added loading skeleton with pulse animation
+- Added error/not-found state with contextual messages
+- Displays real stats: totalReports, verifiedReports, totalComments, veracity rate
+- Shows role badge (ADMIN/MOD/MEMBER) and reputation level (Trusted/Established/New/Unknown)
+- Shows join date formatted from createdAt
+- Avatar display with fallback to initial letter
+- Files changed:
+  - src/app/player/[username]/page.tsx (rewritten)
+- **Learnings for future iterations:**
+  - The API at /api/users/[username] returns UserProfile without email (destructured out in route)
+  - createdAt comes as string from JSON, not Date object - must parse with new Date()
+  - Pre-existing TS error in player page (StatusBadge status type mismatch) is now fixed since we removed the mock report list with non-standard status values
+  - The pre-existing TS errors listed in codebase patterns are all still present and unrelated
+---

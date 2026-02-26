@@ -16,8 +16,8 @@
         "Typecheck passes"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": "Mock page exists at src/app/player/[username]/page.tsx with hardcoded data for 'trustme'. API at /api/users/[username] and service functions getUserByUsername/getUserStats/getUserProfile already exist in airtable.ts."
+      "passes": true,
+      "notes": "Completed. Replaced mock data with real API fetch. Added loading skeleton, error/not-found states, role badges, reputation display, and real stats grid."
     },
     {
       "id": "US-002",
