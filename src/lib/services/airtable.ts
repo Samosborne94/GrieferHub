@@ -578,6 +578,80 @@ export class AirtableService {
         }
     }
 
+    // ===== GRIEFER PROFILES (Phase 6) =====
+
+    /**
+     * Get all reports for a griefer by name (case-insensitive)
+     */
+    static async getReportsByGrieferName(name: string): Promise<Report[]> {
+        try {
+            const records = await base(TABLES.REPORTS)
+                .select({
+                    filterByFormula: `LOWER({griefer_name}) = LOWER('${name.replace(/'/g, "\\'")}')`,
+                    sort: [{ field: 'created_at', direction: 'desc' }],
+                })
+                .all()
+
+            return records.map(transformReport)
+        } catch (error) {
+            console.error('Error fetching reports by griefer name:', error)
+            throw new Error('Failed to fetch griefer reports')
+        }
+    }
+
+    /**
+     * Get aggregated stats for a griefer
+     */
+    static async getGrieferStats(name: string): Promise<{
+        totalReports: number
+        severityBreakdown: Record<string, number>
+        gameBreakdown: Record<string, number>
+        statusBreakdown: Record<string, number>
+        firstReported: string | null
+        lastReported: string | null
+        riskLevel: 'Low' | 'Medium' | 'High' | 'Critical'
+    }> {
+        const reports = await this.getReportsByGrieferName(name)
+
+        const severityBreakdown: Record<string, number> = {}
+        const gameBreakdown: Record<string, number> = {}
+        const statusBreakdown: Record<string, number> = {}
+
+        for (const report of reports) {
+            severityBreakdown[report.severity] = (severityBreakdown[report.severity] || 0) + 1
+            gameBreakdown[report.game] = (gameBreakdown[report.game] || 0) + 1
+            statusBreakdown[report.status] = (statusBreakdown[report.status] || 0) + 1
+        }
+
+        const dates = reports.map(r => new Date(r.createdAt).getTime()).sort((a, b) => a - b)
+
+        return {
+            totalReports: reports.length,
+            severityBreakdown,
+            gameBreakdown,
+            statusBreakdown,
+            firstReported: dates.length > 0 ? new Date(dates[0]).toISOString() : null,
+            lastReported: dates.length > 0 ? new Date(dates[dates.length - 1]).toISOString() : null,
+            riskLevel: this.calculateGrieferRiskLevel(reports.length, severityBreakdown),
+        }
+    }
+
+    /**
+     * Calculate griefer risk level based on report count and severity distribution
+     */
+    static calculateGrieferRiskLevel(
+        totalReports: number,
+        severityBreakdown: Record<string, number>
+    ): 'Low' | 'Medium' | 'High' | 'Critical' {
+        const criticalCount = severityBreakdown['Critical'] || 0
+        const highCount = severityBreakdown['High'] || 0
+
+        if (criticalCount >= 2 || totalReports >= 10) return 'Critical'
+        if (criticalCount >= 1 || highCount >= 3 || totalReports >= 5) return 'High'
+        if (highCount >= 1 || totalReports >= 3) return 'Medium'
+        return 'Low'
+    }
+
     // ===== API KEY MANAGEMENT (Phase 8) =====
 
     /**
