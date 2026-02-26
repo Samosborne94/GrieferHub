@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { Input } from '@/components/common/Input'
+import { Button } from '@/components/common/Button'
 import { useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { z } from 'zod'
 import type { UserProfile } from '@/types/user'
 
 interface ProfileData extends Omit<UserProfile, 'email' | 'createdAt'> {
@@ -33,15 +37,47 @@ function formatJoinDate(dateStr: string) {
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
+const profileSchema = z.object({
+    bio: z.string().max(500, 'Bio must be 500 characters or less').optional().or(z.literal('')),
+    location: z.string().max(100, 'Location must be 100 characters or less').optional().or(z.literal('')),
+    website: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+    discord: z.string().max(50, 'Discord username must be 50 characters or less').optional().or(z.literal('')),
+    steam: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+})
+
+interface EditFormData {
+    bio: string
+    location: string
+    website: string
+    discord: string
+    steam: string
+}
+
+interface EditFormErrors {
+    bio?: string
+    location?: string
+    website?: string
+    discord?: string
+    steam?: string
+}
+
 export default function PlayerProfilePage() {
     const params = useParams()
     const username = Array.isArray(params?.username)
         ? decodeURIComponent(params.username[0])
         : decodeURIComponent(params?.username || '')
 
+    const { data: session } = useSession()
     const [profile, setProfile] = useState<ProfileData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [editing, setEditing] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+    const [formData, setFormData] = useState<EditFormData>({ bio: '', location: '', website: '', discord: '', steam: '' })
+    const [formErrors, setFormErrors] = useState<EditFormErrors>({})
+
+    const isOwnProfile = session?.user?.name === username
 
     useEffect(() => {
         if (!username) return
@@ -68,6 +104,60 @@ export default function PlayerProfilePage() {
 
         fetchProfile()
     }, [username])
+
+    function openEditForm() {
+        if (!profile) return
+        setFormData({
+            bio: profile.bio || '',
+            location: profile.location || '',
+            website: profile.website || '',
+            discord: profile.discord || '',
+            steam: profile.steam || '',
+        })
+        setFormErrors({})
+        setSaveMessage(null)
+        setEditing(true)
+    }
+
+    async function handleSaveProfile(e: React.FormEvent) {
+        e.preventDefault()
+        setFormErrors({})
+        setSaveMessage(null)
+
+        const result = profileSchema.safeParse(formData)
+        if (!result.success) {
+            const errors: EditFormErrors = {}
+            for (const issue of result.error.issues) {
+                const field = issue.path[0] as keyof EditFormErrors
+                errors[field] = issue.message
+            }
+            setFormErrors(errors)
+            return
+        }
+
+        setSaving(true)
+        try {
+            const res = await fetch('/api/users/me/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            })
+            const json = await res.json()
+
+            if (!res.ok || !json.success) {
+                setSaveMessage({ type: 'error', text: json.message || json.error || 'Failed to save' })
+                return
+            }
+
+            setProfile(json.data)
+            setEditing(false)
+            setSaveMessage({ type: 'success', text: 'Profile updated successfully' })
+        } catch {
+            setSaveMessage({ type: 'error', text: 'Failed to save profile' })
+        } finally {
+            setSaving(false)
+        }
+    }
 
     // Loading state
     if (loading) {
@@ -133,10 +223,15 @@ export default function PlayerProfilePage() {
             <main className="flex-1 container py-12">
                 {/* Dossier Header */}
                 <div className="glass rounded-2xl p-8 mb-8 border border-accent-primary/20 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-50">
-                        <div className="text-xs font-mono text-accent-primary border border-accent-primary px-2 py-1 rounded">
+                    <div className="absolute top-0 right-0 p-4 flex items-center gap-3">
+                        <div className="text-xs font-mono text-accent-primary border border-accent-primary px-2 py-1 rounded opacity-50">
                             PLAYER DOSSIER
                         </div>
+                        {isOwnProfile && !editing && (
+                            <Button variant="secondary" size="sm" onClick={openEditForm}>
+                                Edit Profile
+                            </Button>
+                        )}
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
@@ -202,6 +297,77 @@ export default function PlayerProfilePage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Save message */}
+                {saveMessage && (
+                    <div className={`rounded-lg p-4 mb-8 border ${saveMessage.type === 'success'
+                        ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                        : 'bg-red-500/10 border-red-500/30 text-red-400'
+                    }`}>
+                        {saveMessage.text}
+                    </div>
+                )}
+
+                {/* Edit Profile Form */}
+                {editing && (
+                    <form onSubmit={handleSaveProfile} className="glass rounded-2xl p-8 mb-8 border border-accent-primary/30">
+                        <h2 className="text-xl font-bold mb-6">Edit Profile</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">
+                                    Bio <span className="text-text-tertiary">({formData.bio.length}/500)</span>
+                                </label>
+                                <textarea
+                                    value={formData.bio}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                                    maxLength={500}
+                                    rows={3}
+                                    className="w-full px-4 py-2 rounded-lg bg-bg-tertiary border border-gray-700 text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent-primary transition-all duration-200"
+                                    placeholder="Tell the community about yourself..."
+                                />
+                                {formErrors.bio && <p className="mt-1 text-sm text-red-500">{formErrors.bio}</p>}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    label="Location"
+                                    value={formData.location}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                                    placeholder="e.g. Sydney, Australia"
+                                    error={formErrors.location}
+                                />
+                                <Input
+                                    label="Website"
+                                    value={formData.website}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                                    placeholder="https://example.com"
+                                    error={formErrors.website}
+                                />
+                                <Input
+                                    label="Discord"
+                                    value={formData.discord}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, discord: e.target.value }))}
+                                    placeholder="username#1234"
+                                    error={formErrors.discord}
+                                />
+                                <Input
+                                    label="Steam Profile URL"
+                                    value={formData.steam}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, steam: e.target.value }))}
+                                    placeholder="https://steamcommunity.com/id/..."
+                                    error={formErrors.steam}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <Button type="submit" isLoading={saving}>
+                                Save Changes
+                            </Button>
+                            <Button type="button" variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
+                                Cancel
+                            </Button>
+                        </div>
+                    </form>
+                )}
 
                 {/* Bio & Social Links */}
                 {(profile.bio || profile.location || profile.website || profile.discord || profile.steam) && (
