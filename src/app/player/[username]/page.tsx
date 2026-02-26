@@ -77,7 +77,45 @@ export default function PlayerProfilePage() {
     const [formData, setFormData] = useState<EditFormData>({ bio: '', location: '', website: '', discord: '', steam: '' })
     const [formErrors, setFormErrors] = useState<EditFormErrors>({})
 
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
     const isOwnProfile = session?.user?.name === username
+
+    async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            setSaveMessage({ type: 'error', text: 'Invalid file type. Accepted: JPG, PNG, WebP' })
+            return
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            setSaveMessage({ type: 'error', text: 'File too large. Maximum size is 2MB' })
+            return
+        }
+
+        setUploadingAvatar(true)
+        setSaveMessage(null)
+        try {
+            const fd = new FormData()
+            fd.append('avatar', file)
+            const res = await fetch('/api/users/me/avatar', { method: 'POST', body: fd })
+            const json = await res.json()
+
+            if (!res.ok || !json.success) {
+                setSaveMessage({ type: 'error', text: json.error || 'Failed to upload avatar' })
+                return
+            }
+
+            setProfile(prev => prev ? { ...prev, avatar: json.data.url } : prev)
+            setSaveMessage({ type: 'success', text: 'Avatar updated!' })
+        } catch {
+            setSaveMessage({ type: 'error', text: 'Failed to upload avatar' })
+        } finally {
+            setUploadingAvatar(false)
+            e.target.value = ''
+        }
+    }
 
     useEffect(() => {
         if (!username) return
@@ -313,6 +351,34 @@ export default function PlayerProfilePage() {
                     <form onSubmit={handleSaveProfile} className="glass rounded-2xl p-8 mb-8 border border-accent-primary/30">
                         <h2 className="text-xl font-bold mb-6">Edit Profile</h2>
                         <div className="space-y-4">
+                            {/* Avatar Upload */}
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Avatar</label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full bg-bg-elevated border-2 border-border-primary flex items-center justify-center overflow-hidden">
+                                        {profile.avatar ? (
+                                            <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-2xl font-bold text-accent-primary">
+                                                {profile.username.charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <label className="cursor-pointer">
+                                        <span className="px-3 py-1.5 text-sm font-medium rounded-lg bg-bg-tertiary border border-gray-700 text-text-primary hover:bg-bg-secondary transition-all duration-200">
+                                            {uploadingAvatar ? 'Uploading...' : 'Change Avatar'}
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleAvatarUpload}
+                                            disabled={uploadingAvatar}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <span className="text-xs text-text-tertiary">JPG, PNG, or WebP. Max 2MB.</span>
+                                </div>
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-1">
                                     Bio <span className="text-text-tertiary">({formData.bio.length}/500)</span>
