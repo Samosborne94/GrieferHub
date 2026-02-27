@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireModerator } from '@/lib/auth'
+import { sendDiscordWebhook } from '@/lib/services/discord'
 
 // PATCH /api/mod/reports/[id]/status - Update report status (moderator only)
 const updateStatusSchema = z.object({
@@ -71,6 +72,13 @@ export async function PATCH(
                 // Don't fail the status update if notification fails
                 console.error('Failed to create notification:', notifError)
             }
+        }
+
+        // Send Discord webhook when report is verified
+        if (status === 'Verified') {
+            sendDiscordWebhook(updatedReport).catch(err => {
+                console.error('Discord webhook failed:', err)
+            })
         }
 
         return NextResponse.json({
