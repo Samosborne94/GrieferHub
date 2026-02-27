@@ -13,8 +13,11 @@ Started: Thu Feb 26 2026
 - Client-side data fetching uses SWR or fetch in useEffect
 - Cloudinary service at src/lib/services/cloudinary.ts handles media uploads
 - UserProfile type already has bio, avatar, location, website, discord, steam fields
-- Player page at /player/[username] currently has hardcoded mock data that needs replacing
-- Notifications table may not exist in Airtable yet - will need manual provisioning
+- Player page at /player/[username] now fetches real data from API
+- Notifications table (NOTIFICATIONS) must be provisioned in Airtable with fields: user_id, type, title, message, related_report_id, is_read, created_at
+- Airtable .create() with plain objects needs `as any` cast or `(base(TABLE).create as any)({...})` to avoid TS2769 errors
+- Discord webhook fires only on status=Verified, configured via DISCORD_WEBHOOK_URL env var
+- Use stopPropagation on inner links within card components that are already wrapped in Link
 
 ---
 
@@ -33,4 +36,30 @@ Started: Thu Feb 26 2026
   - createdAt comes as string from JSON, not Date object - must parse with new Date()
   - Pre-existing TS error in player page (StatusBadge status type mismatch) is now fixed since we removed the mock report list with non-standard status values
   - The pre-existing TS errors listed in codebase patterns are all still present and unrelated
+---
+
+## 2026-02-27 - US-002 through US-016: Phase 6 Community Features (Complete)
+- **US-002**: Added bio section and social links (location, website, Discord, Steam) to player profile
+- **US-003**: Added inline edit profile form with Zod validation, session-based own-profile check
+- **US-004**: Created POST /api/users/me/avatar for Cloudinary upload, avatar UI in edit form
+- **US-005**: Added getRecentReportsByUserId/getRecentCommentsByUserId, activity API, Recent Reports/Comments on profile
+- **US-006**: Added getReportsByGrieferName, getGrieferStats, calculateGrieferRiskLevel to service layer
+- **US-007**: Created GET /api/griefers/[name] endpoint with aggregated stats and reports
+- **US-008**: Created /griefer/[name] page with threat dossier, severity/status breakdowns, report history
+- **US-009**: Made griefer name in ReportCard a clickable link to /griefer/[name]
+- **US-010**: Added Notification type, NOTIFICATIONS table constant, and full CRUD service functions
+- **US-011**: Created 4 notification API routes (list, unread-count, mark-read, mark-all-read)
+- **US-012**: Created NotificationBell component with polling, dropdown, mark-read, integrated in Header
+- **US-013**: Added notification creation in mod status PATCH route on report status change
+- **US-014**: Added getAnalyticsOverview, getTopReporters, getRecentActivity service functions
+- **US-015**: Created /admin/analytics page with overview cards, breakdowns, leaderboard, activity feed
+- **US-016**: Added sendDiscordWebhook utility, fires on Verified status change
+- Files changed: 20+ files created/modified
+- All 16 stories pass typecheck
+- **Learnings:**
+  - Airtable .create() TS overload issues can be worked around with `(base(TABLE).create as any)({...})`
+  - JSON dates from API come as strings, not Date objects - type interfaces need string versions
+  - Inner links in card components need stopPropagation to avoid parent Link navigation
+  - Notifications table needs manual provisioning in Airtable before the feature works
+  - Discord webhook is fire-and-forget (Promise.catch) to not block the main flow
 ---

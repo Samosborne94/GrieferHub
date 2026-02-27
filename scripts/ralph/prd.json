@@ -33,8 +33,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": "UserProfile type in src/types/user.ts already has bio, avatar, location, website, discord, steam fields. getUserProfile in airtable.ts fetches these."
+      "passes": true,
+      "notes": "Completed. Added bio section and social links panel with location pin, website link, Discord icon, and Steam icon. Empty fields hidden."
     },
     {
       "id": "US-003",
@@ -50,8 +50,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": "PUT /api/users/me/profile endpoint and updateUserProfile service function already exist. UserProfileUpdate type defined in src/types/user.ts. Follow existing form patterns (React Hook Form + Zod) from submit report page."
+      "passes": true,
+      "notes": "Completed. Inline edit form with Zod validation, session-based own-profile check, success/error feedback. Uses existing Input/Button components."
     },
     {
       "id": "US-004",
@@ -67,8 +67,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "Cloudinary service exists at src/lib/services/cloudinary.ts. Follow evidence upload pattern from report submission for the upload flow."
+      "passes": true,
+      "notes": "Completed. New POST /api/users/me/avatar endpoint with Cloudinary upload. Avatar upload UI in edit form with preview, file validation, and inline feedback."
     },
     {
       "id": "US-005",
@@ -84,8 +84,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": "May need new service functions to fetch reports by reporter_id and comments by author_id with limit parameter. Existing getReports has filtering support."
+      "passes": true,
+      "notes": "Completed. Added getRecentReportsByUserId/getRecentCommentsByUserId service functions, new /api/users/[username]/activity endpoint, and Recent Reports + Recent Comments sections on profile page."
     },
     {
       "id": "US-006",
@@ -98,8 +98,8 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": "Follow existing service function patterns in src/lib/services/airtable.ts. Airtable filterByFormula supports LOWER() for case-insensitive matching."
+      "passes": true,
+      "notes": "Completed. Added getReportsByGrieferName, getGrieferStats, and calculateGrieferRiskLevel to airtable service."
     },
     {
       "id": "US-007",
@@ -112,8 +112,8 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": "Create at src/app/api/griefers/[name]/route.ts. Follow existing API route patterns (NextResponse.json, error handling)."
+      "passes": true,
+      "notes": "Completed. GET /api/griefers/[name] returns griefer name, stats, risk level, and full report list."
     },
     {
       "id": "US-008",
@@ -129,8 +129,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": "Follow dark theme styling from existing pages. Use existing StatusBadge and SeverityBadge components for report list items."
+      "passes": true,
+      "notes": "Completed. Griefer profile page with threat dossier header, severity/status breakdowns, and full report history."
     },
     {
       "id": "US-009",
@@ -145,8 +145,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": "ReportCard component at src/components/reports/ReportCard.tsx. Use Next.js Link component."
+      "passes": true,
+      "notes": "Completed. Griefer name in ReportCard is now a clickable link to /griefer/[name] with stopPropagation."
     },
     {
       "id": "US-010",
@@ -159,8 +159,8 @@
         "Typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": "Requires Notifications table in Airtable with matching fields. Follow existing service function patterns. Table may not exist yet in Airtable - add a note in progress.txt if so."
+      "passes": true,
+      "notes": "Completed. Notification type, NOTIFICATIONS table constant, and full CRUD service functions added. Note: Notifications table must be provisioned in Airtable."
     },
     {
       "id": "US-011",
@@ -175,8 +175,8 @@
         "Typecheck passes"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": "Create routes under src/app/api/notifications/. Use getServerSession for auth check, following existing protected route patterns."
+      "passes": true,
+      "notes": "Completed. Four notification API routes created, all with auth checks."
     },
     {
       "id": "US-012",
@@ -194,8 +194,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": "Add to existing Navbar/Header component. Use SWR for polling unread count. Follow existing component patterns."
+      "passes": true,
+      "notes": "Completed. NotificationBell component with polling, dropdown, mark-read, integrated into Header."
     },
     {
       "id": "US-013",
@@ -208,8 +208,8 @@
         "Typecheck passes"
       ],
       "priority": 13,
-      "passes": false,
-      "notes": "Hook into existing report status update logic in admin dashboard or report API routes. Create notification using createNotification service function."
+      "passes": true,
+      "notes": "Completed. Notification created in mod status PATCH route after status change, with type-specific titles and messages."
     },
     {
       "id": "US-014",
@@ -223,8 +223,8 @@
         "Typecheck passes"
       ],
       "priority": 14,
-      "passes": false,
-      "notes": "Add to src/lib/services/airtable.ts. Some stats (like reports by game) require fetching all reports and aggregating in JS since Airtable doesn't support GROUP BY."
+      "passes": true,
+      "notes": "Completed. Three analytics functions added with in-memory aggregation from Airtable."
     },
     {
       "id": "US-015",
@@ -243,8 +243,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 15,
-      "passes": false,
-      "notes": "Create at src/app/admin/analytics/page.tsx. Follow admin page pattern from src/app/admin/page.tsx for auth checks. Use Tailwind for simple chart-like visuals (progress bars, stat cards) rather than adding a chart library."
+      "passes": true,
+      "notes": "Completed. Analytics API route and dashboard page with overview cards, breakdowns, leaderboard, and activity feed."
     },
     {
       "id": "US-016",
@@ -260,8 +260,8 @@
         "Typecheck passes"
       ],
       "priority": 16,
-      "passes": false,
-      "notes": "Discord webhooks are simple POST requests with JSON body - no Discord.js library needed. Add to the same status change flow as notification creation (US-013)."
+      "passes": true,
+      "notes": "Completed. sendDiscordWebhook utility + integration in mod status route. Fires on Verified status only."
     }
   ]
 }
