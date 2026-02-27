@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Button } from '../common/Button'
+import { NotificationBell } from '../notifications/NotificationBell'
 
 export const Header = () => {
     const { data: session, status } = useSession()
@@ -103,6 +104,7 @@ export const Header = () => {
                             </div>
                         ) : session ? (
                             <>
+                                <NotificationBell />
                                 <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-secondary">
                                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
                                         <span className="text-xs font-bold text-white">
