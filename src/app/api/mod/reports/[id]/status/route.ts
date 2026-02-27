@@ -43,11 +43,35 @@ export async function PATCH(
             )
         }
 
+        const oldStatus = report.status
+
         // Update status
         const updatedReport = await AirtableService.updateReportStatus(
             params.id,
             status
         )
+
+        // Create notification for report author
+        if (report.reporterId && oldStatus !== status) {
+            try {
+                const notificationType = status === 'Verified' ? 'report_verified' as const
+                    : status === 'Rejected' ? 'report_rejected' as const
+                    : 'report_status_change' as const
+
+                await AirtableService.createNotification({
+                    userId: report.reporterId,
+                    type: notificationType,
+                    title: status === 'Verified' ? 'Report Verified!'
+                        : status === 'Rejected' ? 'Report Rejected'
+                        : `Report Status: ${status}`,
+                    message: `Your report on "${report.grieferName}" was changed from ${oldStatus} to ${status}.`,
+                    relatedReportId: params.id,
+                })
+            } catch (notifError) {
+                // Don't fail the status update if notification fails
+                console.error('Failed to create notification:', notifError)
+            }
+        }
 
         return NextResponse.json({
             success: true,
