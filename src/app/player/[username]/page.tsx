@@ -5,10 +5,12 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
+import { Badge, SeverityBadge } from '@/components/common/Badge'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { z } from 'zod'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { UserProfile } from '@/types/user'
 import type { Report } from '@/types/report'
 import type { Comment } from '@/types/comment'
@@ -27,22 +29,22 @@ interface ActivityReport extends Omit<Report, 'createdAt' | 'updatedAt'> {
     updatedAt: string
 }
 
-function getRoleBadge(role: string) {
+function getRoleBadgeVariant(role: string): any {
     switch (role) {
         case 'admin':
-            return { label: 'ADMIN', className: 'bg-red-500/20 text-red-400 border-red-500/50' }
+            return 'error'
         case 'moderator':
-            return { label: 'MOD', className: 'bg-blue-500/20 text-blue-400 border-blue-500/50' }
+            return 'primary'
         default:
-            return { label: 'MEMBER', className: 'bg-gray-500/20 text-gray-400 border-gray-500/50' }
+            return 'default'
     }
 }
 
-function getThreatLevel(reputationScore: number) {
-    if (reputationScore >= 50) return { label: 'Trusted', className: 'bg-green-500/10 text-green-500 border-green-500/50' }
-    if (reputationScore >= 20) return { label: 'Established', className: 'bg-blue-500/10 text-blue-500 border-blue-500/50' }
-    if (reputationScore >= 1) return { label: 'New', className: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/50' }
-    return { label: 'Unknown', className: 'bg-gray-800 text-gray-400 border-gray-700' }
+function getThreatLevelVariant(reputationScore: number) {
+    if (reputationScore >= 50) return { label: 'Trusted', variant: 'verified' }
+    if (reputationScore >= 20) return { label: 'Established', variant: 'info' }
+    if (reputationScore >= 1) return { label: 'New', variant: 'warning' }
+    return { label: 'Unknown', variant: 'default' }
 }
 
 function timeAgo(dateStr: string) {
@@ -288,8 +290,7 @@ export default function PlayerProfilePage() {
         )
     }
 
-    const roleBadge = getRoleBadge(profile.role)
-    const threat = getThreatLevel(profile.reputationScore)
+    const threat = getThreatLevelVariant(profile.reputationScore)
     const verificationRate = profile.totalReports > 0
         ? Math.round((profile.verifiedReports / profile.totalReports) * 100)
         : 0
@@ -298,9 +299,9 @@ export default function PlayerProfilePage() {
         <div className="min-h-screen flex flex-col arc-theme-bg text-text-primary">
             <Header />
 
-            <main className="flex-1 container py-12">
+            <main className="flex-1 container py-12 fade-in-up">
                 {/* Dossier Header */}
-                <div className="glass rounded-2xl p-8 mb-8 border border-accent-primary/20 relative overflow-hidden">
+                <div className="glass rounded-2xl p-8 mb-8 border border-accent-primary/20 relative overflow-hidden card-elevated">
                     <div className="absolute top-0 right-0 p-4 flex items-center gap-3">
                         <div className="text-xs font-mono text-accent-primary border border-accent-primary px-2 py-1 rounded opacity-50">
                             PLAYER DOSSIER
@@ -315,12 +316,13 @@ export default function PlayerProfilePage() {
                     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
                         {/* Avatar / Identity */}
                         <div className="flex-shrink-0 text-center">
-                            <div className="w-32 h-32 rounded-full bg-bg-elevated border-2 border-accent-primary/50 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,68,68,0.2)]">
+                            <div className="w-32 h-32 rounded-full bg-bg-elevated border-2 border-accent-primary/50 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,68,68,0.2)] overflow-hidden relative">
                                 {profile.avatar ? (
-                                    <img
+                                    <Image
                                         src={profile.avatar}
                                         alt={profile.username}
-                                        className="w-full h-full rounded-full object-cover"
+                                        fill
+                                        className="object-cover"
                                     />
                                 ) : (
                                     <span className="text-4xl font-bold text-accent-primary">
@@ -334,9 +336,9 @@ export default function PlayerProfilePage() {
                         <div className="flex-1 text-center md:text-left">
                             <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start mb-2">
                                 <h1 className="text-4xl font-bold tracking-tight">{profile.username}</h1>
-                                <span className={`px-2 py-0.5 rounded text-xs font-bold border ${roleBadge.className}`}>
-                                    {roleBadge.label}
-                                </span>
+                                <Badge variant={getRoleBadgeVariant(profile.role)} size="sm">
+                                    {profile.role.toUpperCase()}
+                                </Badge>
                             </div>
                             <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-6">
                                 <div className="px-3 py-1 bg-bg-tertiary rounded-lg text-sm border border-border-primary">
@@ -348,27 +350,27 @@ export default function PlayerProfilePage() {
                             {/* Reputation Level */}
                             <div className="inline-block">
                                 <div className="text-sm text-text-secondary mb-1">Reputation</div>
-                                <div className={`text-2xl font-bold px-4 py-2 rounded-lg border ${threat.className}`}>
+                                <Badge variant={threat.variant} size="lg" dot className="font-bold">
                                     {threat.label} ({profile.reputationScore} pts)
-                                </div>
+                                </Badge>
                             </div>
                         </div>
 
                         {/* Stats Grid */}
                         <div className="grid grid-cols-2 gap-4 text-center">
-                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
+                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary card-elevated">
                                 <div className="text-3xl font-bold text-white mb-1">{profile.totalReports}</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Reports</div>
                             </div>
-                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
+                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary card-elevated">
                                 <div className="text-3xl font-bold text-green-500 mb-1">{profile.verifiedReports}</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Verified</div>
                             </div>
-                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
+                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary card-elevated">
                                 <div className="text-3xl font-bold text-blue-400 mb-1">{profile.totalComments}</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Comments</div>
                             </div>
-                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary">
+                            <div className="p-4 rounded-xl bg-bg-tertiary/50 border border-border-primary card-elevated">
                                 <div className="text-3xl font-bold text-accent-primary mb-1">{verificationRate}%</div>
                                 <div className="text-xs text-text-secondary uppercase tracking-wider">Veracity</div>
                             </div>
@@ -378,7 +380,7 @@ export default function PlayerProfilePage() {
 
                 {/* Save message */}
                 {saveMessage && (
-                    <div className={`rounded-lg p-4 mb-8 border ${saveMessage.type === 'success'
+                    <div className={`rounded-lg p-4 mb-8 border fade-in ${saveMessage.type === 'success'
                         ? 'bg-green-500/10 border-green-500/30 text-green-400'
                         : 'bg-red-500/10 border-red-500/30 text-red-400'
                     }`}>
@@ -388,16 +390,16 @@ export default function PlayerProfilePage() {
 
                 {/* Edit Profile Form */}
                 {editing && (
-                    <form onSubmit={handleSaveProfile} className="glass rounded-2xl p-8 mb-8 border border-accent-primary/30">
+                    <form onSubmit={handleSaveProfile} className="glass rounded-2xl p-8 mb-8 border border-accent-primary/30 card-elevated scale-in">
                         <h2 className="text-xl font-bold mb-6">Edit Profile</h2>
                         <div className="space-y-4">
                             {/* Avatar Upload */}
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-2">Avatar</label>
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-bg-elevated border-2 border-border-primary flex items-center justify-center overflow-hidden">
+                                    <div className="w-16 h-16 rounded-full bg-bg-elevated border-2 border-border-primary flex items-center justify-center overflow-hidden relative">
                                         {profile.avatar ? (
-                                            <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                            <Image src={profile.avatar} alt="Avatar" fill className="object-cover" />
                                         ) : (
                                             <span className="text-2xl font-bold text-accent-primary">
                                                 {profile.username.charAt(0).toUpperCase()}
@@ -477,7 +479,7 @@ export default function PlayerProfilePage() {
 
                 {/* Bio & Social Links */}
                 {(profile.bio || profile.location || profile.website || profile.discord || profile.steam) && (
-                    <div className="glass rounded-2xl p-8 mb-8 border border-border-primary">
+                    <div className="glass rounded-2xl p-8 mb-8 border border-border-primary card-elevated">
                         {profile.bio && (
                             <div className="mb-6">
                                 <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-2">About</h3>
@@ -539,7 +541,7 @@ export default function PlayerProfilePage() {
                 )}
 
                 {/* Recent Reports */}
-                <div className="mb-8">
+                <div className="mb-12 stagger-animation">
                     <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                         <span className="w-1 h-8 bg-accent-primary rounded-full"></span>
                         Recent Reports
@@ -550,45 +552,38 @@ export default function PlayerProfilePage() {
                                 <Link
                                     key={report.id}
                                     href={`/report/${report.id}`}
-                                    className="block glass-hover rounded-xl p-4 border border-border-primary hover:border-accent-primary/30 transition-all"
+                                    className="block glass rounded-xl p-4 border border-border-primary hover:border-accent-primary/30 transition-all card-elevated"
                                 >
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-text-primary font-medium">{report.grieferName}</span>
-                                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-bg-tertiary border border-border-primary text-text-secondary">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <span className="text-text-primary font-bold">{report.grieferName}</span>
+                                            <Badge variant="default" size="sm" outline>
                                                 {report.game}
-                                            </span>
-                                            <span className={`px-2 py-0.5 rounded text-xs font-bold border ${
-                                                report.severity === 'Critical' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                report.severity === 'High' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                                                report.severity === 'Medium' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
-                                                'bg-gray-700 text-gray-300 border-gray-600'
-                                            }`}>
-                                                {report.severity}
-                                            </span>
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-                                                report.status === 'Verified' ? 'bg-green-500/20 text-green-500 border-green-500' :
-                                                report.status === 'Rejected' ? 'bg-red-500/20 text-red-500 border-red-500' :
-                                                report.status === 'Resolved' ? 'bg-blue-500/20 text-blue-500 border-blue-500' :
-                                                'bg-yellow-500/20 text-yellow-500 border-yellow-500'
-                                            }`}>
+                                            </Badge>
+                                            <SeverityBadge severity={report.severity as any} />
+                                            <Badge variant={
+                                                report.status === 'Verified' ? 'verified' :
+                                                report.status === 'Rejected' ? 'rejected' :
+                                                report.status === 'Resolved' ? 'info' :
+                                                'warning'
+                                            } size="sm" dot>
                                                 {report.status}
-                                            </span>
+                                            </Badge>
                                         </div>
-                                        <span className="text-xs text-text-tertiary">{timeAgo(report.createdAt)}</span>
+                                        <span className="text-xs text-text-tertiary font-mono">{timeAgo(report.createdAt)}</span>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-8 glass rounded-xl border border-border-primary">
+                        <div className="text-center py-12 glass rounded-2xl border border-dashed border-border-primary">
                             <p className="text-text-tertiary">No reports submitted yet.</p>
                         </div>
                     )}
                 </div>
 
                 {/* Recent Comments */}
-                <div className="mb-8">
+                <div className="mb-8 stagger-animation">
                     <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                         <span className="w-1 h-8 bg-blue-500 rounded-full"></span>
                         Recent Comments
@@ -599,22 +594,25 @@ export default function PlayerProfilePage() {
                                 <Link
                                     key={comment.id}
                                     href={`/report/${comment.reportId}`}
-                                    className="block glass-hover rounded-xl p-4 border border-border-primary hover:border-blue-500/30 transition-all"
+                                    className="block glass rounded-xl p-4 border border-border-primary hover:border-blue-500/30 transition-all card-elevated"
                                 >
-                                    <p className="text-text-primary text-sm mb-2 line-clamp-2">
+                                    <p className="text-text-primary text-sm mb-3 line-clamp-2 leading-relaxed">
                                         {comment.content}
                                     </p>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs text-text-tertiary">
+                                        <span className="text-xs text-text-tertiary flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                            </svg>
                                             on report {comment.reportId}
                                         </span>
-                                        <span className="text-xs text-text-tertiary">{timeAgo(comment.createdAt)}</span>
+                                        <span className="text-xs text-text-tertiary font-mono">{timeAgo(comment.createdAt)}</span>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-8 glass rounded-xl border border-border-primary">
+                        <div className="text-center py-12 glass rounded-2xl border border-dashed border-border-primary">
                             <p className="text-text-tertiary">No comments yet.</p>
                         </div>
                     )}
@@ -625,3 +623,5 @@ export default function PlayerProfilePage() {
         </div>
     )
 }
+
+

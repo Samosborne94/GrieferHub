@@ -8,7 +8,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh pr view:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm update:*)",
+      "Bash(claude:*)",
+      "WebSearch",
+      "Bash(cd:*)",
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npm install --save-dev jest @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom ts-jest identity-obj-proxy @types/jest 2>&122132)",
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx jest --no-cache 2>&12\n222)",
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx jest --no-cache 2>&1222)"
     ]
   }
 }
