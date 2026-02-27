@@ -653,6 +653,151 @@ export class AirtableService {
         return 'Low'
     }
 
+    // ===== ANALYTICS (Phase 6) =====
+
+    /**
+     * Get platform-wide analytics overview
+     */
+    static async getAnalyticsOverview(): Promise<{
+        totalReports: number
+        reportsByStatus: Record<string, number>
+        reportsBySeverity: Record<string, number>
+        reportsByGame: Record<string, number>
+        totalUsers: number
+        totalComments: number
+    }> {
+        try {
+            const [reportRecords, userRecords, commentRecords] = await Promise.all([
+                base(TABLES.REPORTS).select().all(),
+                base(TABLES.USERS).select().all(),
+                base(TABLES.COMMENTS).select().all(),
+            ])
+
+            const reportsByStatus: Record<string, number> = {}
+            const reportsBySeverity: Record<string, number> = {}
+            const reportsByGame: Record<string, number> = {}
+
+            for (const record of reportRecords) {
+                const status = record.get('status') as string
+                const severity = record.get('severity') as string
+                const game = record.get('game') as string
+
+                if (status) reportsByStatus[status] = (reportsByStatus[status] || 0) + 1
+                if (severity) reportsBySeverity[severity] = (reportsBySeverity[severity] || 0) + 1
+                if (game) reportsByGame[game] = (reportsByGame[game] || 0) + 1
+            }
+
+            return {
+                totalReports: reportRecords.length,
+                reportsByStatus,
+                reportsBySeverity,
+                reportsByGame,
+                totalUsers: userRecords.length,
+                totalComments: commentRecords.length,
+            }
+        } catch (error) {
+            console.error('Error fetching analytics:', error)
+            throw new Error('Failed to fetch analytics')
+        }
+    }
+
+    /**
+     * Get top reporters by verified report count
+     */
+    static async getTopReporters(limit: number = 10): Promise<Array<{
+        userId: string
+        username: string
+        verifiedReports: number
+        totalReports: number
+    }>> {
+        try {
+            const [reportRecords, userRecords] = await Promise.all([
+                base(TABLES.REPORTS).select().all(),
+                base(TABLES.USERS).select().all(),
+            ])
+
+            // Build user map
+            const userMap = new Map<string, string>()
+            for (const user of userRecords) {
+                userMap.set(user.id, user.get('username') as string)
+            }
+
+            // Count reports per user
+            const reportCounts = new Map<string, { verified: number; total: number }>()
+            for (const record of reportRecords) {
+                const reporterId = record.get('reporter_id') as string
+                if (!reporterId) continue
+
+                const counts = reportCounts.get(reporterId) || { verified: 0, total: 0 }
+                counts.total++
+                if (record.get('status') === 'Verified') counts.verified++
+                reportCounts.set(reporterId, counts)
+            }
+
+            // Sort by verified count and return top N
+            return Array.from(reportCounts.entries())
+                .map(([userId, counts]) => ({
+                    userId,
+                    username: userMap.get(userId) || 'Unknown',
+                    verifiedReports: counts.verified,
+                    totalReports: counts.total,
+                }))
+                .sort((a, b) => b.verifiedReports - a.verifiedReports)
+                .slice(0, limit)
+        } catch (error) {
+            console.error('Error fetching top reporters:', error)
+            throw new Error('Failed to fetch top reporters')
+        }
+    }
+
+    /**
+     * Get recent activity (reports and comments)
+     */
+    static async getRecentActivity(limit: number = 10): Promise<Array<{
+        type: 'report' | 'comment'
+        id: string
+        summary: string
+        createdAt: string
+    }>> {
+        try {
+            const [reports, commentRecords] = await Promise.all([
+                base(TABLES.REPORTS)
+                    .select({ sort: [{ field: 'created_at', direction: 'desc' }], maxRecords: limit })
+                    .all(),
+                base(TABLES.COMMENTS)
+                    .select({ sort: [{ field: 'created_at', direction: 'desc' }], maxRecords: limit })
+                    .all(),
+            ])
+
+            const items: Array<{ type: 'report' | 'comment'; id: string; summary: string; createdAt: string }> = []
+
+            for (const r of reports) {
+                items.push({
+                    type: 'report',
+                    id: r.id,
+                    summary: `Report on "${r.get('griefer_name')}" in ${r.get('game')}`,
+                    createdAt: (r.get('created_at') as string) || new Date().toISOString(),
+                })
+            }
+
+            for (const c of commentRecords) {
+                items.push({
+                    type: 'comment',
+                    id: c.id,
+                    summary: `Comment by ${c.get('author_username')}: "${(c.get('content') as string || '').slice(0, 80)}"`,
+                    createdAt: (c.get('created_at') as string) || new Date().toISOString(),
+                })
+            }
+
+            return items
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .slice(0, limit)
+        } catch (error) {
+            console.error('Error fetching recent activity:', error)
+            throw new Error('Failed to fetch recent activity')
+        }
+    }
+
     // ===== NOTIFICATIONS (Phase 6) =====
 
     /**
@@ -666,17 +811,17 @@ export class AirtableService {
         relatedReportId?: string
     }): Promise<Notification> {
         try {
-            const record = await base(TABLES.NOTIFICATIONS).create({
+            const record = await (base(TABLES.NOTIFICATIONS).create as any)({
                 user_id: data.userId,
                 type: data.type,
                 title: data.title,
                 message: data.message,
                 related_report_id: data.relatedReportId || '',
                 is_read: false,
-            } as any)
+            })
 
             return {
-                id: record.id,
+                id: record.id as string,
                 userId: data.userId,
                 type: data.type,
                 title: data.title,
