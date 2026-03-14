@@ -1,11 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary'
-
-// Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
-    api_key: process.env.CLOUDINARY_API_KEY!,
-    api_secret: process.env.CLOUDINARY_API_SECRET!,
-})
+import { randomUUID } from 'crypto'
 
 export interface UploadResult {
     url: string
@@ -16,104 +9,64 @@ export interface UploadResult {
     duration?: number
 }
 
-/**
- * Helper to convert buffer to data URI
- */
-function bufferToDataUri(buffer: Buffer, mimetype: string): string {
-    const b64 = buffer.toString('base64')
-    return `data:${mimetype};base64,${b64}`
+function isMockDataEnabled() {
+    return process.env.USE_MOCK_DATA === 'true'
 }
 
-/**
- * Upload an image to Cloudinary
- * Automatically optimizes quality and format
- */
+function createMockUploadResult(kind: 'image' | 'video'): UploadResult {
+    const id = `mock/${kind}/${randomUUID()}`
+
+    if (kind === 'video') {
+        return {
+            url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+            publicId: id,
+            width: 1280,
+            height: 720,
+            format: 'mp4',
+            duration: 5,
+        }
+    }
+
+    return {
+        url: 'https://placehold.co/1280x720/png?text=GrieferHub+Mock+Upload',
+        publicId: id,
+        width: 1280,
+        height: 720,
+        format: 'png',
+    }
+}
+
 export async function uploadImage(
     file: string | Buffer,
     folder: string = 'griefer-evidence/images'
 ): Promise<UploadResult> {
-    try {
-        let fileToUpload = file
-
-        // Convert buffer to data URI if needed
-        if (Buffer.isBuffer(file)) {
-            fileToUpload = bufferToDataUri(file, 'image/jpeg') // Default to jpeg as intermediate, Cloudinary handles format
-        }
-
-        const result = await cloudinary.uploader.upload(fileToUpload as string, {
-            folder,
-            resource_type: 'image',
-            transformation: [
-                { quality: 'auto', fetch_format: 'auto' },
-                { width: 1920, height: 1080, crop: 'limit' },
-            ],
-        })
-
-        return {
-            url: result.secure_url,
-            publicId: result.public_id,
-            width: result.width,
-            height: result.height,
-            format: result.format,
-        }
-    } catch (error) {
-        console.error('Image upload error:', error)
-        throw new Error('Failed to upload image')
+    if (isMockDataEnabled()) {
+        return createMockUploadResult('image')
     }
+
+    const { uploadImage: uploadImageReal } = await import('@/lib/services/cloudinary-real')
+    return uploadImageReal(file, folder)
 }
 
-/**
- * Upload a video to Cloudinary
- * Automatically transcodes for web playback
- */
 export async function uploadVideo(
     file: string | Buffer,
     folder: string = 'griefer-evidence/videos'
 ): Promise<UploadResult> {
-    try {
-        let fileToUpload = file
-
-        // Convert buffer to data URI if needed
-        if (Buffer.isBuffer(file)) {
-            fileToUpload = bufferToDataUri(file, 'video/mp4') // Default to mp4 as intermediate
-        }
-
-        const result = await cloudinary.uploader.upload(fileToUpload as string, {
-            folder,
-            resource_type: 'video',
-            eager: [
-                { streaming_profile: 'hd', format: 'mp4' },
-                { format: 'webm' },
-            ],
-            eager_async: true,
-        })
-
-        return {
-            url: result.secure_url,
-            publicId: result.public_id,
-            width: result.width,
-            height: result.height,
-            format: result.format,
-            duration: result.duration,
-        }
-    } catch (error) {
-        console.error('Video upload error:', error)
-        throw new Error('Failed to upload video')
+    if (isMockDataEnabled()) {
+        return createMockUploadResult('video')
     }
+
+    const { uploadVideo: uploadVideoReal } = await import('@/lib/services/cloudinary-real')
+    return uploadVideoReal(file, folder)
 }
 
-/**
- * Delete media from Cloudinary
- */
 export async function deleteMedia(publicId: string): Promise<void> {
-    try {
-        // Determine resource type from public ID
-        const resourceType = publicId.includes('/videos/') ? 'video' : 'image'
-        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
-    } catch (error) {
-        console.error('Media deletion error:', error)
-        throw new Error('Failed to delete media')
+    if (isMockDataEnabled()) {
+        return
     }
+
+    const { deleteMedia: deleteMediaReal } = await import('@/lib/services/cloudinary-real')
+    return deleteMediaReal(publicId)
 }
 
-export { cloudinary }
+export const cloudinary = null

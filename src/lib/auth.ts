@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs'
 import { getServerSession as getNextAuthSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth-options'
+import { forbidden, unauthorized } from '@/lib/errors'
+
+export { authOptions }
 
 /**
  * Hash a password using bcrypt (10 rounds)
@@ -35,7 +38,7 @@ export async function requireAuth() {
     const session = await getServerSession()
 
     if (!session || !session.user) {
-        throw new Error('Unauthorized')
+        throw unauthorized()
     }
 
     return session
@@ -61,7 +64,7 @@ export async function requireModerator() {
     const session = await requireAuth()
 
     if (!hasRole(session.user?.role || 'user', 'moderator')) {
-        throw new Error('Forbidden')
+        throw forbidden('Moderator or admin access is required')
     }
 
     return session
@@ -75,7 +78,7 @@ export async function requireAdmin() {
     const session = await requireAuth()
 
     if (!hasRole(session.user?.role || 'user', 'admin')) {
-        throw new Error('Forbidden')
+        throw forbidden('Admin access is required')
     }
 
     return session
