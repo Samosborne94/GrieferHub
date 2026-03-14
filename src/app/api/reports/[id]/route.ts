@@ -1,5 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import {
+    apiSuccess,
+    handleApiError,
+    parseJsonBody,
+} from '@/lib/api/route'
+import { forbidden, notFound } from '@/lib/errors'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth, hasRole } from '@/lib/auth'
 
@@ -12,28 +18,12 @@ export async function GET(
         const report = await AirtableService.getReportById(params.id)
 
         if (!report) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Report not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Report not found')
         }
 
-        return NextResponse.json({
-            success: true,
-            data: report,
-        })
+        return apiSuccess(report)
     } catch (error) {
-        console.error('Error fetching report:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to fetch report',
-            },
-            { status: 500 }
-        )
+        return handleApiError(error, request, 'Fetch report', { reportId: params.id })
     }
 }
 
@@ -57,13 +47,7 @@ export async function PATCH(
         const report = await AirtableService.getReportById(params.id)
 
         if (!report) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Report not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Report not found')
         }
 
         // Check if user is owner or has admin role
@@ -71,59 +55,19 @@ export async function PATCH(
         const isAdmin = hasRole(session.user?.role || 'user', 'admin')
 
         if (!isOwner && !isAdmin) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Forbidden',
-                    message: 'You can only edit your own reports',
-                },
-                { status: 403 }
-            )
+            throw forbidden('You can only edit your own reports')
         }
 
-        const body = await request.json()
-        const validationResult = updateReportSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
+        const payload = await parseJsonBody(request, updateReportSchema)
 
         const updatedReport = await AirtableService.updateReport(
             params.id,
-            validationResult.data
+            payload
         )
 
-        return NextResponse.json({
-            success: true,
-            data: updatedReport,
-            message: 'Report updated successfully',
-        })
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error updating report:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to update report',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(updatedReport, { message: 'Report updated successfully' })
+    } catch (error) {
+        return handleApiError(error, request, 'Update report', { reportId: params.id })
     }
 }
 
@@ -137,13 +81,7 @@ export async function DELETE(
         const report = await AirtableService.getReportById(params.id)
 
         if (!report) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Report not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Report not found')
         }
 
         // Check if user is owner or has admin role
@@ -151,40 +89,13 @@ export async function DELETE(
         const isAdmin = hasRole(session.user?.role || 'user', 'admin')
 
         if (!isOwner && !isAdmin) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Forbidden',
-                    message: 'You can only delete your own reports',
-                },
-                { status: 403 }
-            )
+            throw forbidden('You can only delete your own reports')
         }
 
         await AirtableService.deleteReport(params.id)
 
-        return NextResponse.json({
-            success: true,
-            message: 'Report deleted successfully',
-        })
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error deleting report:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to delete report',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(undefined, { message: 'Report deleted successfully' })
+    } catch (error) {
+        return handleApiError(error, request, 'Delete report', { reportId: params.id })
     }
 }

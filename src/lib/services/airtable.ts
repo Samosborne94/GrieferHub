@@ -1,4 +1,13 @@
 import { base, TABLES } from '../airtable-client'
+import {
+    andFormula,
+    caseInsensitiveEqualsFormula,
+    containsInsensitiveFormula,
+    equalsFormula,
+    orFormula,
+} from '@/lib/airtable-formula'
+import { externalServiceError, forbidden } from '@/lib/errors'
+import { logServerError } from '@/lib/logger'
 import type { Report, ReportInput, ReportFilters } from '@/types/report'
 import type { User, UserInput, UserProfile, UserProfileUpdate, UserStats } from '@/types/user'
 import type { Comment, CommentInput } from '@/types/comment'
@@ -7,6 +16,23 @@ import type { Notification, NotificationType } from '@/types/notification'
 import type { FieldSet, Records } from 'airtable'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
+
+function throwAirtableServiceError(
+    message: string,
+    error: unknown,
+    metadata?: Record<string, unknown>
+): never {
+    logServerError(message, error, metadata)
+    throw externalServiceError(message, error)
+}
+
+function logAirtableServiceError(
+    message: string,
+    error: unknown,
+    metadata?: Record<string, unknown>
+) {
+    logServerError(message, error, metadata)
+}
 
 /**
  * Transform Airtable record to Report object
@@ -86,34 +112,25 @@ export class AirtableService {
      */
     static async getReports(filters?: ReportFilters): Promise<Report[]> {
         try {
+            const filterByFormula = andFormula(
+                filters?.game ? equalsFormula('game', filters.game) : undefined,
+                filters?.status ? equalsFormula('status', filters.status) : undefined,
+                filters?.severity ? equalsFormula('severity', filters.severity) : undefined,
+                filters?.search
+                    ? orFormula(
+                        containsInsensitiveFormula('griefer_name', filters.search),
+                        containsInsensitiveFormula('description', filters.search)
+                    )
+                    : undefined
+            )
+
             let query = base(TABLES.REPORTS).select({
                 sort: [{ field: 'created_at', direction: 'desc' }],
             })
 
-            // Build filter formula
-            const filterFormulas: string[] = []
-
-            if (filters?.game) {
-                filterFormulas.push(`{game} = '${filters.game}'`)
-            }
-
-            if (filters?.status) {
-                filterFormulas.push(`{status} = '${filters.status}'`)
-            }
-
-            if (filters?.severity) {
-                filterFormulas.push(`{severity} = '${filters.severity}'`)
-            }
-
-            if (filters?.search) {
-                filterFormulas.push(
-                    `OR(FIND(LOWER('${filters.search}'), LOWER({griefer_name})), FIND(LOWER('${filters.search}'), LOWER({description})))`
-                )
-            }
-
-            if (filterFormulas.length > 0) {
+            if (filterByFormula) {
                 query = base(TABLES.REPORTS).select({
-                    filterByFormula: `AND(${filterFormulas.join(', ')})`,
+                    filterByFormula,
                     sort: [{ field: 'created_at', direction: 'desc' }],
                 })
             }
@@ -121,8 +138,7 @@ export class AirtableService {
             const records = await query.all()
             return records.map(transformReport)
         } catch (error) {
-            console.error('Error fetching reports:', error)
-            throw new Error('Failed to fetch reports')
+            throwAirtableServiceError('Failed to fetch reports', error, { filters })
         }
     }
 
@@ -134,7 +150,7 @@ export class AirtableService {
             const record = await base(TABLES.REPORTS).find(id)
             return transformReport(record)
         } catch (error) {
-            console.error('Error fetching report:', error)
+            logAirtableServiceError('Failed to fetch report by id', error, { id })
             return null
         }
     }
@@ -160,8 +176,7 @@ export class AirtableService {
 
             return transformReport(record)
         } catch (error) {
-            console.error('Error creating report:', error)
-            throw new Error('Failed to create report')
+            throwAirtableServiceError('Failed to create report', error, { reporterId: data.reporterId })
         }
     }
 
@@ -185,8 +200,7 @@ export class AirtableService {
             const record = await base(TABLES.REPORTS).update(id, updateData)
             return transformReport(record)
         } catch (error) {
-            console.error('Error updating report:', error)
-            throw new Error('Failed to update report')
+            throwAirtableServiceError('Failed to update report', error, { id })
         }
     }
 
@@ -197,8 +211,7 @@ export class AirtableService {
         try {
             await base(TABLES.REPORTS).destroy(id)
         } catch (error) {
-            console.error('Error deleting report:', error)
-            throw new Error('Failed to delete report')
+            throwAirtableServiceError('Failed to delete report', error, { id })
         }
     }
 
@@ -209,7 +222,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.USERS)
                 .select({
-                    filterByFormula: `{email} = '${email}'`,
+                    filterByFormula: equalsFormula('email', email),
                     maxRecords: 1,
                 })
                 .all()
@@ -222,7 +235,7 @@ export class AirtableService {
                 password: record.get('password') as string,
             }
         } catch (error) {
-            console.error('Error fetching user by email:', error)
+            logAirtableServiceError('Failed to fetch user by email', error, { email })
             return null
         }
     }
@@ -242,8 +255,7 @@ export class AirtableService {
 
             return transformUser(record)
         } catch (error) {
-            console.error('Error creating user:', error)
-            throw new Error('Failed to create user')
+            throwAirtableServiceError('Failed to create user', error, { email: data.email })
         }
     }
 
@@ -254,7 +266,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.REPORTS)
                 .select({
-                    filterByFormula: `{reporter_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('reporter_id', userId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                 })
                 .all()
@@ -273,7 +285,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.REPORTS)
                 .select({
-                    filterByFormula: `{reporter_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('reporter_id', userId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                     maxRecords: limit,
                 })
@@ -293,7 +305,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.COMMENTS)
                 .select({
-                    filterByFormula: `{author_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('author_id', userId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                     maxRecords: limit,
                 })
@@ -321,8 +333,7 @@ export class AirtableService {
 
             return transformReport(record)
         } catch (error) {
-            console.error('Error updating report status:', error)
-            throw new Error('Failed to update report status')
+            throwAirtableServiceError('Failed to update report status', error, { id, status })
         }
     }
 
@@ -334,7 +345,7 @@ export class AirtableService {
             const record = await base(TABLES.USERS).find(id)
             return transformUser(record)
         } catch (error) {
-            console.error('Error fetching user:', error)
+            logAirtableServiceError('Failed to fetch user by id', error, { id })
             return null
         }
     }
@@ -380,15 +391,14 @@ export class AirtableService {
         try {
             const records = await base(TABLES.COMMENTS)
                 .select({
-                    filterByFormula: `{report_id} = '${reportId}'`,
+                    filterByFormula: equalsFormula('report_id', reportId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                 })
                 .all()
 
             return records.map(transformComment)
         } catch (error) {
-            console.error('Error fetching comments:', error)
-            throw new Error('Failed to fetch comments')
+            throwAirtableServiceError('Failed to fetch comments for report', error, { reportId })
         }
     }
 
@@ -412,8 +422,7 @@ export class AirtableService {
 
             return transformComment(record)
         } catch (error) {
-            console.error('Error creating comment:', error)
-            throw new Error('Failed to create comment')
+            throwAirtableServiceError('Failed to create comment', error, { reportId: data.reportId })
         }
     }
 
@@ -430,8 +439,7 @@ export class AirtableService {
 
             return transformComment(record)
         } catch (error) {
-            console.error('Error updating comment:', error)
-            throw new Error('Failed to update comment')
+            throwAirtableServiceError('Failed to update comment', error, { id })
         }
     }
 
@@ -442,8 +450,7 @@ export class AirtableService {
         try {
             await base(TABLES.COMMENTS).destroy(id)
         } catch (error) {
-            console.error('Error deleting comment:', error)
-            throw new Error('Failed to delete comment')
+            throwAirtableServiceError('Failed to delete comment', error, { id })
         }
     }
 
@@ -455,7 +462,7 @@ export class AirtableService {
             const record = await base(TABLES.COMMENTS).find(id)
             return transformComment(record)
         } catch (error) {
-            console.error('Error fetching comment:', error)
+            logAirtableServiceError('Failed to fetch comment by id', error, { id })
             return null
         }
     }
@@ -467,7 +474,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.USERS)
                 .select({
-                    filterByFormula: `{username} = '${username}'`,
+                    filterByFormula: equalsFormula('username', username),
                     maxRecords: 1,
                 })
                 .all()
@@ -475,7 +482,7 @@ export class AirtableService {
             if (records.length === 0) return null
             return transformUser(records[0])
         } catch (error) {
-            console.error('Error fetching user by username:', error)
+            logAirtableServiceError('Failed to fetch user by username', error, { username })
             return null
         }
     }
@@ -491,7 +498,7 @@ export class AirtableService {
             // Get all comments by user
             const comments = await base(TABLES.COMMENTS)
                 .select({
-                    filterByFormula: `{author_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('author_id', userId),
                 })
                 .all()
 
@@ -588,15 +595,14 @@ export class AirtableService {
         try {
             const records = await base(TABLES.REPORTS)
                 .select({
-                    filterByFormula: `LOWER({griefer_name}) = LOWER('${name.replace(/'/g, "\\'")}')`,
+                    filterByFormula: caseInsensitiveEqualsFormula('griefer_name', name),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                 })
                 .all()
 
             return records.map(transformReport)
         } catch (error) {
-            console.error('Error fetching reports by griefer name:', error)
-            throw new Error('Failed to fetch griefer reports')
+            throwAirtableServiceError('Failed to fetch reports by griefer name', error, { name })
         }
     }
 
@@ -843,7 +849,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.NOTIFICATIONS)
                 .select({
-                    filterByFormula: `{user_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('user_id', userId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                     maxRecords: limit,
                 })
@@ -884,7 +890,10 @@ export class AirtableService {
         try {
             const records = await base(TABLES.NOTIFICATIONS)
                 .select({
-                    filterByFormula: `AND({user_id} = '${userId}', NOT({is_read}))`,
+                    filterByFormula: andFormula(
+                        equalsFormula('user_id', userId),
+                        'NOT({is_read})'
+                    ),
                 })
                 .all()
 
@@ -917,7 +926,10 @@ export class AirtableService {
         try {
             const records = await base(TABLES.NOTIFICATIONS)
                 .select({
-                    filterByFormula: `AND({user_id} = '${userId}', NOT({is_read}))`,
+                    filterByFormula: andFormula(
+                        equalsFormula('user_id', userId),
+                        'NOT({is_read})'
+                    ),
                 })
                 .all()
 
@@ -951,7 +963,7 @@ export class AirtableService {
             const rateLimit = data.rateLimit || 100 // 100 requests per minute default
 
             // Create record
-            const record = await base(TABLES.API_KEYS).create({
+            const record = await (base(TABLES.API_KEYS).create as any)({
                 user_id: userId,
                 name: data.name,
                 key_prefix: keyPrefix,
@@ -985,7 +997,7 @@ export class AirtableService {
         try {
             const records = await base(TABLES.API_KEYS)
                 .select({
-                    filterByFormula: `{user_id} = '${userId}'`,
+                    filterByFormula: equalsFormula('user_id', userId),
                     sort: [{ field: 'created_at', direction: 'desc' }],
                 })
                 .all()
@@ -1017,7 +1029,7 @@ export class AirtableService {
                 if (isMatch) {
                     // Check if expired
                     const expiresAt = record.get('expires_at')
-                    if (expiresAt && new Date(expiresAt) < new Date()) {
+                    if (expiresAt && new Date(expiresAt as string) < new Date()) {
                         return null // Expired
                     }
 
@@ -1064,7 +1076,7 @@ export class AirtableService {
             const keyUserId = record.get('user_id') as string
 
             if (keyUserId !== userId) {
-                throw new Error('Unauthorized to revoke this key')
+                throw forbidden('You can only revoke your own API keys')
             }
 
             // Deactivate instead of delete (for audit trail)

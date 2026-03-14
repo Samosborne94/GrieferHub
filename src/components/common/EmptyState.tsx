@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { Button } from './Button'
 
 /**
  * EmptyState Component
@@ -95,22 +96,23 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
             {/* Action Button */}
             {action && (
-                <>
+                <div className="flex justify-center">
                     {action.href ? (
                         <Link href={action.href}>
-                            <button className="px-6 py-3 bg-accent-primary hover:bg-accent-primary-hover text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-glow hover:scale-105">
+                            <Button variant="primary" glow>
                                 {action.label}
-                            </button>
+                            </Button>
                         </Link>
                     ) : (
-                        <button
+                        <Button
+                            variant="primary"
+                            glow
                             onClick={action.onClick}
-                            className="px-6 py-3 bg-accent-primary hover:bg-accent-primary-hover text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-glow hover:scale-105"
                         >
                             {action.label}
-                        </button>
+                        </Button>
                     )}
-                </>
+                </div>
             )}
         </div>
     )

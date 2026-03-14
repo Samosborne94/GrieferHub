@@ -7,6 +7,7 @@ import { ReportCard } from '@/components/reports/ReportCard'
 import { SkeletonGrid } from '@/components/common/SkeletonCard'
 import { NoReportsFound, NoReportsYet, ErrorState } from '@/components/common/EmptyState'
 import { Input } from '@/components/common/Input'
+import { Button } from '@/components/common/Button'
 import type { Report, ReportStatus, ReportSeverity } from '@/types/report'
 
 export default function IntelBoardPage() {
@@ -95,20 +96,22 @@ export default function IntelBoardPage() {
                             Filter Reports
                         </h2>
                         {(searchQuery || selectedGame || selectedStatus || selectedSeverity) && (
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => {
                                     setSearchQuery('')
                                     setSelectedGame('')
                                     setSelectedStatus('')
                                     setSelectedSeverity('')
                                 }}
-                                className="text-sm text-accent-primary hover:text-accent-primary-hover transition-colors flex items-center gap-1 group"
+                                className="text-accent-primary hover:text-accent-primary-hover group"
                             >
                                 <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                                 Clear all filters
-                            </button>
+                            </Button>
                         )}
                     </div>
 
@@ -198,7 +201,7 @@ export default function IntelBoardPage() {
                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
-                                        "{searchQuery}"
+                                        &quot;{searchQuery}&quot;
                                     </span>
                                 )}
                                 {selectedGame && (
@@ -272,16 +275,17 @@ export default function IntelBoardPage() {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 animate-fade-in">
-                                <button
+                                <Button
+                                    variant="secondary"
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="group px-5 py-2.5 rounded-lg glass-hover border border-border-primary text-text-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:transform-none transition-all flex items-center gap-2"
+                                    className="group px-5 py-2.5"
                                 >
                                     <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                     Previous
-                                </button>
+                                </Button>
 
                                 <div className="flex gap-2">
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
@@ -292,17 +296,15 @@ export default function IntelBoardPage() {
                                             (page >= currentPage - 1 && page <= currentPage + 1)
                                         ) {
                                             return (
-                                                <button
+                                                <Button
                                                     key={page}
+                                                    variant={currentPage === page ? 'primary' : 'secondary'}
+                                                    glow={currentPage === page}
                                                     onClick={() => setCurrentPage(page)}
-                                                    className={`min-w-[44px] px-4 py-2.5 rounded-lg border font-medium transition-all ${
-                                                        currentPage === page
-                                                            ? 'bg-accent-primary border-accent-primary text-white shadow-glow'
-                                                            : 'glass-hover border-border-primary text-text-primary'
-                                                    }`}
+                                                    className="min-w-[44px]"
                                                 >
                                                     {page}
-                                                </button>
+                                                </Button>
                                             )
                                         } else if (
                                             page === currentPage - 2 ||
@@ -314,16 +316,17 @@ export default function IntelBoardPage() {
                                     })}
                                 </div>
 
-                                <button
+                                <Button
+                                    variant="secondary"
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="group px-5 py-2.5 rounded-lg glass-hover border border-border-primary text-text-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:transform-none transition-all flex items-center gap-2"
+                                    className="group px-5 py-2.5"
                                 >
                                     Next
                                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </>

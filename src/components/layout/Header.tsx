@@ -105,16 +105,19 @@ export const Header = () => {
                         ) : session ? (
                             <>
                                 <NotificationBell />
-                                <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-secondary">
+                                <Link
+                                    href={`/player/${session.user?.name || session.user?.email}`}
+                                    className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-secondary hover:border-accent-primary/50 transition-all duration-200"
+                                >
                                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
                                         <span className="text-xs font-bold text-white">
                                             {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase() || 'U'}
                                         </span>
                                     </div>
-                                    <span className="text-sm font-medium text-text-secondary">
+                                    <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">
                                         {session.user?.name || session.user?.email}
                                     </span>
-                                </div>
+                                </Link>
                                 <Button variant="ghost" size="sm" onClick={() => signOut()}>
                                     Sign Out
                                 </Button>
@@ -172,6 +175,22 @@ export const Header = () => {
                                     {link.label}
                                 </Link>
                             ))}
+                            {session && (
+                                <Link
+                                    href={`/player/${encodeURIComponent(session.user?.name || session.user?.email || '')}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        pathname?.startsWith('/player/')
+                                            ? 'bg-accent-primary/10 text-accent-primary'
+                                            : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                                    }`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    My Profile
+                                </Link>
+                            )}
                             {!session && (
                                 <Link
                                     href="/register"

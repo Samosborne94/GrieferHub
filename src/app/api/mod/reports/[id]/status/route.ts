@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import { apiSuccess, handleApiError, parseJsonBody } from '@/lib/api/route'
+import { notFound } from '@/lib/errors'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireModerator } from '@/lib/auth'
 import { sendDiscordWebhook } from '@/lib/services/discord'
+import { logServerError } from '@/lib/logger'
 
 // PATCH /api/mod/reports/[id]/status - Update report status (moderator only)
 const updateStatusSchema = z.object({
@@ -16,32 +19,12 @@ export async function PATCH(
     try {
         await requireModerator()
 
-        const body = await request.json()
-        const validationResult = updateStatusSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
-
-        const { status } = validationResult.data
+        const { status } = await parseJsonBody(request, updateStatusSchema)
 
         // Check if report exists
         const report = await AirtableService.getReportById(params.id)
         if (!report) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Report not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Report not found')
         }
 
         const oldStatus = report.status
@@ -70,52 +53,27 @@ export async function PATCH(
                 })
             } catch (notifError) {
                 // Don't fail the status update if notification fails
-                console.error('Failed to create notification:', notifError)
+                logServerError('Failed to create report status notification', notifError, {
+                    reportId: params.id,
+                    reporterId: report.reporterId,
+                    status,
+                })
             }
         }
 
         // Send Discord webhook when report is verified
         if (status === 'Verified') {
             sendDiscordWebhook(updatedReport).catch(err => {
-                console.error('Discord webhook failed:', err)
+                logServerError('Discord webhook failed after report verification', err, {
+                    reportId: updatedReport.id,
+                })
             })
         }
 
-        return NextResponse.json({
-            success: true,
-            data: updatedReport,
+        return apiSuccess(updatedReport, {
             message: `Report status updated to ${status}`,
         })
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                    message: 'You must be logged in',
-                },
-                { status: 401 }
-            )
-        }
-
-        if (error.message === 'Forbidden') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Forbidden',
-                    message: 'You must be a moderator or admin to update report status',
-                },
-                { status: 403 }
-            )
-        }
-
-        console.error('Error updating report status:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to update report status',
-            },
-            { status: 500 }
-        )
+    } catch (error) {
+        return handleApiError(error, request, 'Update report status', { reportId: params.id })
     }
 }

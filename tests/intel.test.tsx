@@ -77,7 +77,7 @@ describe('IntelBoardPage', () => {
     jest.restoreAllMocks()
   })
 
-  it('renders the page heading', () => {
+  it('renders the page heading', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValue({
       json: () => Promise.resolve({ success: true, data: [] }),
     })
@@ -85,6 +85,10 @@ describe('IntelBoardPage', () => {
     render(<IntelBoardPage />)
     expect(screen.getByText('Intel Board')).toBeInTheDocument()
     expect(screen.getByText('Browse verified reports of griefers across different games')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('no-reports-yet')).toBeInTheDocument()
+    })
   })
 
   it('shows loading skeleton while fetching', () => {
@@ -139,10 +143,12 @@ describe('IntelBoardPage', () => {
 
     render(<IntelBoardPage />)
 
-    expect(screen.getByText('Filter Reports')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Search by name or description...')).toBeInTheDocument()
-    expect(screen.getByText('All Statuses')).toBeInTheDocument()
-    expect(screen.getByText('All Severities')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Filter Reports')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Search by name or description...')).toBeInTheDocument()
+      expect(screen.getByText('All Statuses')).toBeInTheDocument()
+      expect(screen.getByText('All Severities')).toBeInTheDocument()
+    })
   })
 
   it('shows results count after loading', async () => {

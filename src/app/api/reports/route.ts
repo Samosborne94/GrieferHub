@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import {
+    apiSuccess,
+    getAuthenticatedUserId,
+    handleApiError,
+    parseJsonBody,
+} from '@/lib/api/route'
 import { AirtableService } from '@/lib/services/airtable'
-import { getServerSession, requireAuth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth'
 
 // GET /api/reports - List reports with filtering
 export async function GET(request: NextRequest) {
@@ -17,19 +23,9 @@ export async function GET(request: NextRequest) {
 
         const reports = await AirtableService.getReports(filters)
 
-        return NextResponse.json({
-            success: true,
-            data: reports,
-        })
+        return apiSuccess(reports)
     } catch (error) {
-        console.error('Error fetching reports:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to fetch reports',
-            },
-            { status: 500 }
-        )
+        return handleApiError(error, request, 'Fetch reports')
     }
 }
 
@@ -46,60 +42,17 @@ const createReportSchema = z.object({
 
 export async function POST(request: NextRequest) {
     try {
-        // Require authentication
         const session = await requireAuth()
-
-        const body = await request.json()
-
-        // Validate input
-        const validationResult = createReportSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
-
-        const reportData = validationResult.data
+        const reportData = await parseJsonBody(request, createReportSchema)
 
         // Create report
         const report = await AirtableService.createReport({
             ...reportData,
-            reporterId: session.user?.id || '',
+            reporterId: getAuthenticatedUserId(session),
         })
 
-        return NextResponse.json(
-            {
-                success: true,
-                data: report,
-                message: 'Report created successfully',
-            },
-            { status: 201 }
-        )
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                    message: 'You must be logged in to create a report',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error creating report:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to create report',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(report, { status: 201, message: 'Report created successfully' })
+    } catch (error) {
+        return handleApiError(error, request, 'Create report')
     }
 }

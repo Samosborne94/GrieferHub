@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { apiSuccess, handleApiError, parseJsonBody } from '@/lib/api/route'
+import { conflict } from '@/lib/errors'
 import { AirtableService } from '@/lib/services/airtable'
 import { hashPassword } from '@/lib/auth'
 
@@ -12,36 +14,13 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json()
-
-        // Validate input
-        const validationResult = registerSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
-
-        const { username, email, password } = validationResult.data
+        const { username, email, password } = await parseJsonBody(request, registerSchema)
 
         // Check if user already exists
         const existingUser = await AirtableService.getUserByEmail(email)
 
         if (existingUser) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'User already exists',
-                    message: 'An account with this email already exists',
-                },
-                { status: 409 }
-            )
+            throw conflict('An account with this email already exists')
         }
 
         // Hash password
@@ -55,27 +34,15 @@ export async function POST(request: NextRequest) {
             hashedPassword,
         })
 
-        return NextResponse.json(
+        return apiSuccess(
             {
-                success: true,
-                data: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                },
-                message: 'User registered successfully',
+                id: user.id,
+                username: user.username,
+                email: user.email,
             },
-            { status: 201 }
+            { status: 201, message: 'User registered successfully' }
         )
     } catch (error) {
-        console.error('Registration error:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Internal server error',
-                message: 'Failed to register user',
-            },
-            { status: 500 }
-        )
+        return handleApiError(error, request, 'Registration')
     }
 }

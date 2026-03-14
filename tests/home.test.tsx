@@ -24,8 +24,8 @@ describe('HomePage', () => {
   it('renders the hero heading', () => {
     render(<HomePage />)
     expect(screen.getByText('Trust')).toBeInTheDocument()
-    expect(screen.getByText('No')).toBeInTheDocument()
-    expect(screen.getByText('One')).toBeInTheDocument()
+    expect(screen.getByText('No One')).toBeInTheDocument()
+    expect(screen.getByText('Survive')).toBeInTheDocument()
   })
 
   it('renders header and footer', () => {
@@ -48,27 +48,28 @@ describe('HomePage', () => {
   it('renders CTA buttons with correct links', () => {
     render(<HomePage />)
     expect(screen.getByText('Report Betrayal')).toBeInTheDocument()
-    expect(screen.getByText('View Intel Board')).toBeInTheDocument()
+    expect(screen.getByText('Browse Database')).toBeInTheDocument()
   })
 
   it('renders How It Works section', () => {
     render(<HomePage />)
-    expect(screen.getByText('How It Works')).toBeInTheDocument()
-    expect(screen.getByText('Create an Account')).toBeInTheDocument()
-    expect(screen.getByText('Browse Intel Board')).toBeInTheDocument()
-    expect(screen.getByText('Submit Reports')).toBeInTheDocument()
+    expect(screen.getByText('Tactical')).toBeInTheDocument()
+    expect(screen.getByText('Superiority')).toBeInTheDocument()
+    expect(screen.getByText('Verified Intelligence')).toBeInTheDocument()
+    expect(screen.getByText('Global Search')).toBeInTheDocument()
   })
 
   it('renders Why Choose GrieferHub section', () => {
     render(<HomePage />)
-    expect(screen.getByText('Verified Reports Only')).toBeInTheDocument()
-    expect(screen.getByText('Cross-Platform Tracking')).toBeInTheDocument()
-    expect(screen.getByText('Community-Driven')).toBeInTheDocument()
+    expect(screen.getByText('Zero-Trust Framework')).toBeInTheDocument()
+    expect(screen.getByText('Secure Evidence Vault')).toBeInTheDocument()
+    expect(screen.getByText('Raider Network')).toBeInTheDocument()
   })
 
   it('renders Ready to Get Started CTA', () => {
     render(<HomePage />)
-    expect(screen.getByText('Ready to Get Started?')).toBeInTheDocument()
-    expect(screen.getByText('Create Free Account')).toBeInTheDocument()
+    expect(screen.getByText('Cleanse the')).toBeInTheDocument()
+    expect(screen.getByText('Zone')).toBeInTheDocument()
+    expect(screen.getByText('Join the Network')).toBeInTheDocument()
   })
 })

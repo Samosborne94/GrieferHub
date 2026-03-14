@@ -34,18 +34,26 @@ export default function SubmitReportPage() {
     setError('')
 
     try {
-      // Mock submission for now (since we don't have a real backend connected in this verifying environment yet)
-      // In production, this would POST to /api/reports
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const data = await response.json()
 
-      console.log('Report submitted:', formData)
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to submit report')
+      }
 
-      // Redirect to a "success" or dashboard
-      router.push('/dashboard')
-    } catch (err) {
-      setError('Failed to submit report. Please try again.')
+      console.log('Report submitted successfully:', data.data)
+
+      // Redirect to the newly created report or the intel board
+      router.push(`/report/${data.data.id}`)
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit report. Please try again.')
     } finally {
       setIsLoading(false)
     }

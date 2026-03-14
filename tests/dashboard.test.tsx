@@ -108,8 +108,8 @@ describe('DashboardPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Total Reports')).toBeInTheDocument()
-      expect(screen.getByText('Verified')).toBeInTheDocument()
-      expect(screen.getByText('Under Review')).toBeInTheDocument()
+      expect(screen.getAllByText('Verified').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Under Review').length).toBeGreaterThan(0)
       expect(screen.getByText('Resolved')).toBeInTheDocument()
     })
   })

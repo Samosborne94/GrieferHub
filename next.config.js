@@ -1,3 +1,5 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
@@ -21,6 +23,13 @@ const nextConfig = {
     // Enable experimental features for better performance
     experimental: {
         optimizeCss: false,
+    },
+    webpack: (config) => {
+        if (process.env.USE_MOCK_DATA === 'true') {
+            config.resolve.alias['@/lib/services/airtable'] =
+                path.resolve(__dirname, 'src/lib/services/airtable-mock')
+        }
+        return config
     },
 }
 

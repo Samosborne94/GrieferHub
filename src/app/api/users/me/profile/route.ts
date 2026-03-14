@@ -1,5 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import {
+    apiSuccess,
+    getAuthenticatedUserId,
+    handleApiError,
+    parseJsonBody,
+} from '@/lib/api/route'
+import { notFound } from '@/lib/errors'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
 
@@ -15,37 +22,9 @@ const updateProfileSchema = z.object({
 
 export async function PUT(request: NextRequest) {
     try {
-        // Require authentication
         const session = await requireAuth()
-        const userId = session.user?.id
-
-        if (!userId) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                },
-                { status: 401 }
-            )
-        }
-
-        const body = await request.json()
-
-        // Validate input
-        const validationResult = updateProfileSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
-
-        const profileData = validationResult.data
+        const userId = getAuthenticatedUserId(session)
+        const profileData = await parseJsonBody(request, updateProfileSchema)
 
         // Update profile
         await AirtableService.updateUserProfile(userId, profileData)
@@ -53,86 +32,27 @@ export async function PUT(request: NextRequest) {
         // Get updated profile
         const profile = await AirtableService.getUserProfile(userId)
 
-        return NextResponse.json({
-            success: true,
-            data: profile,
-            message: 'Profile updated successfully',
-        })
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                    message: 'You must be logged in to update your profile',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error updating profile:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to update profile',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(profile, { message: 'Profile updated successfully' })
+    } catch (error) {
+        return handleApiError(error, request, 'Update own profile')
     }
 }
 
 // GET /api/users/me/profile - Get own profile
 export async function GET(request: NextRequest) {
     try {
-        // Require authentication
         const session = await requireAuth()
-        const userId = session.user?.id
-
-        if (!userId) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                },
-                { status: 401 }
-            )
-        }
+        const userId = getAuthenticatedUserId(session)
 
         // Get profile
         const profile = await AirtableService.getUserProfile(userId)
 
         if (!profile) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Profile not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Profile not found')
         }
 
-        return NextResponse.json({
-            success: true,
-            data: profile,
-        })
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error fetching profile:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to fetch profile',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(profile)
+    } catch (error) {
+        return handleApiError(error, request, 'Fetch own profile')
     }
 }

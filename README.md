@@ -175,6 +175,7 @@ Comprehensive documentation to help you get started and contribute:
 - **[Future Features](./FUTURE_FEATURES.md)** - Detailed Phase 6+ implementation plans and community requests
 - **[Project Plan](./docs/PROJECT_PLAN.md)** - Complete project roadmap and phase breakdown
 - **[Architecture](./docs/ARCHITECTURE.md)** - System architecture, design patterns, and technical decisions
+- **[Harness Engineering Principles](./docs/HARNESS_ENGINEERING_PRINCIPLES.md)** - Backend guardrails, paved paths, and shared route/service standards
 
 ### Deployment & Operations
 

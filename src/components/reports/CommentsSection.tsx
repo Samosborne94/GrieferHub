@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/common/Button'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { UserProfileLink } from '@/components/common/UserProfileLink'
 import type { Comment } from '@/types/comment'
 
 interface CommentsSectionProps {
@@ -239,17 +240,10 @@ export const CommentsSection = ({ reportId }: CommentsSectionProps) => {
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span
-                                        className={`font-semibold text-sm ${
-                                            comment.authorRole === 'moderator'
-                                                ? 'text-green-400'
-                                                : comment.authorRole === 'admin'
-                                                ? 'text-red-400'
-                                                : 'text-text-primary'
-                                        }`}
-                                    >
-                                        {comment.authorUsername}
-                                    </span>
+                                    <UserProfileLink
+                                        username={comment.authorUsername}
+                                        role={comment.authorRole}
+                                    />
                                     {comment.authorRole === 'moderator' && (
                                         <span className="px-1.5 py-0.5 rounded bg-green-900/30 text-green-400 text-[10px] uppercase font-bold border border-green-900/50">
                                             MOD

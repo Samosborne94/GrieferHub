@@ -15,7 +15,21 @@
       "Bash(cd:*)",
       "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npm install --save-dev jest @testing-library/react @testing-library/jest-dom @testing-library/user-event jest-environment-jsdom ts-jest identity-obj-proxy @types/jest 2>&122132)",
       "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx jest --no-cache 2>&12\n222)",
-      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx jest --no-cache 2>&1222)"
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx jest --no-cache 2>&1222)",
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx playwright test --update-snapshots 2>&1)",
+      "Bash(cd \"/c/Users/SamOs/OneDrive RP/OneDrive/@ActiveVibeCoding/GrieferHub\" && npx playwright test 2>&1)",
+      "Bash(curl:)",
+      "Bash(curl:*)",
+      "Bash(head)",
+      "Bash(npx tsc:*)",
+      "Bash(winget search:*)",
+      "Bash(gh auth:*)",
+      "Bash(tasklist:*)",
+      "Bash(wmic process:*)",
+      "Bash(wsl:*)",
+      "Bash(taskkill:*)",
+      "Bash(reg query:*)",
+      "Bash(reg delete:*)"
     ]
   }
 }

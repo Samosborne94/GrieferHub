@@ -1,5 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import {
+    apiSuccess,
+    getAuthenticatedUserId,
+    handleApiError,
+    parseJsonBody,
+} from '@/lib/api/route'
+import { notFound } from '@/lib/errors'
 import { AirtableService } from '@/lib/services/airtable'
 import { requireAuth } from '@/lib/auth'
 
@@ -13,19 +20,9 @@ export async function GET(
 
         const comments = await AirtableService.getCommentsByReportId(reportId)
 
-        return NextResponse.json({
-            success: true,
-            data: comments,
-        })
+        return apiSuccess(comments)
     } catch (error) {
-        console.error('Error fetching comments:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to fetch comments',
-            },
-            { status: 500 }
-        )
+        return handleApiError(error, request, 'Fetch report comments', { reportId: params.id })
     }
 }
 
@@ -39,50 +36,20 @@ export async function POST(
     { params }: { params: { id: string } }
 ) {
     try {
-        // Require authentication
         const session = await requireAuth()
-
         const reportId = params.id
-        const body = await request.json()
-
-        // Validate input
-        const validationResult = createCommentSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Validation failed',
-                    message: validationResult.error.issues[0].message,
-                },
-                { status: 400 }
-            )
-        }
-
-        const { content } = validationResult.data
+        const { content } = await parseJsonBody(request, createCommentSchema)
 
         // Check if report exists
         const report = await AirtableService.getReportById(reportId)
         if (!report) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Report not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('Report not found')
         }
 
         // Get user details
-        const user = await AirtableService.getUserById(session.user?.id || '')
+        const user = await AirtableService.getUserById(getAuthenticatedUserId(session))
         if (!user) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'User not found',
-                },
-                { status: 404 }
-            )
+            throw notFound('User not found')
         }
 
         // Create comment
@@ -94,33 +61,8 @@ export async function POST(
             authorRole: user.role,
         })
 
-        return NextResponse.json(
-            {
-                success: true,
-                data: comment,
-                message: 'Comment created successfully',
-            },
-            { status: 201 }
-        )
-    } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Unauthorized',
-                    message: 'You must be logged in to comment',
-                },
-                { status: 401 }
-            )
-        }
-
-        console.error('Error creating comment:', error)
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to create comment',
-            },
-            { status: 500 }
-        )
+        return apiSuccess(comment, { status: 201, message: 'Comment created successfully' })
+    } catch (error) {
+        return handleApiError(error, request, 'Create comment', { reportId: params.id })
     }
 }

@@ -32,9 +32,11 @@ export const PlayerSearch = () => {
                     <div className="absolute right-1 top-1 bottom-1">
                         <Button
                             type="submit"
-                            variant="custom" // We'll style this manually to fit inside
-                            className="h-full px-4 rounded-lg bg-accent-primary hover:bg-accent-primary-hover text-white font-medium text-sm transition-colors"
+                            variant="primary"
+                            size="sm"
+                            className="h-full px-6 rounded-lg"
                             isLoading={isLoading}
+                            glow
                         >
                             Search
                         </Button>

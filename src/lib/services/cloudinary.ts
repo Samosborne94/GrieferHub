@@ -1,10 +1,15 @@
 import { v2 as cloudinary } from 'cloudinary'
+import { externalServiceError } from '@/lib/errors'
+import { getServerEnv } from '@/lib/env'
+import { logServerError } from '@/lib/logger'
+
+const env = getServerEnv()
 
 // Configure Cloudinary
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
-    api_key: process.env.CLOUDINARY_API_KEY!,
-    api_secret: process.env.CLOUDINARY_API_SECRET!,
+    cloud_name: env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    api_key: env.CLOUDINARY_API_KEY,
+    api_secret: env.CLOUDINARY_API_SECRET,
 })
 
 export interface UploadResult {
@@ -57,8 +62,8 @@ export async function uploadImage(
             format: result.format,
         }
     } catch (error) {
-        console.error('Image upload error:', error)
-        throw new Error('Failed to upload image')
+        logServerError('Image upload failed', error)
+        throw externalServiceError('Failed to upload image', error)
     }
 }
 
@@ -97,8 +102,8 @@ export async function uploadVideo(
             duration: result.duration,
         }
     } catch (error) {
-        console.error('Video upload error:', error)
-        throw new Error('Failed to upload video')
+        logServerError('Video upload failed', error)
+        throw externalServiceError('Failed to upload video', error)
     }
 }
 
@@ -111,8 +116,8 @@ export async function deleteMedia(publicId: string): Promise<void> {
         const resourceType = publicId.includes('/videos/') ? 'video' : 'image'
         await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
     } catch (error) {
-        console.error('Media deletion error:', error)
-        throw new Error('Failed to delete media')
+        logServerError('Media deletion failed', error, { publicId })
+        throw externalServiceError('Failed to delete media', error)
     }
 }
 

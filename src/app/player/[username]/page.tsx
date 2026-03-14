@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
 import { Badge, SeverityBadge } from '@/components/common/Badge'
+import type { BadgeProps } from '@/components/common/Badge'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { z } from 'zod'
@@ -29,7 +30,7 @@ interface ActivityReport extends Omit<Report, 'createdAt' | 'updatedAt'> {
     updatedAt: string
 }
 
-function getRoleBadgeVariant(role: string): any {
+function getRoleBadgeVariant(role: string): BadgeProps['variant'] {
     switch (role) {
         case 'admin':
             return 'error'
@@ -41,10 +42,10 @@ function getRoleBadgeVariant(role: string): any {
 }
 
 function getThreatLevelVariant(reputationScore: number) {
-    if (reputationScore >= 50) return { label: 'Trusted', variant: 'verified' }
-    if (reputationScore >= 20) return { label: 'Established', variant: 'info' }
-    if (reputationScore >= 1) return { label: 'New', variant: 'warning' }
-    return { label: 'Unknown', variant: 'default' }
+    if (reputationScore >= 50) return { label: 'Trusted', variant: 'verified' as const }
+    if (reputationScore >= 20) return { label: 'Established', variant: 'info' as const }
+    if (reputationScore >= 1) return { label: 'New', variant: 'warning' as const }
+    return { label: 'Unknown', variant: 'default' as const }
 }
 
 function timeAgo(dateStr: string) {

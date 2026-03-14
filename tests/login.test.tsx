@@ -30,7 +30,7 @@ describe('LoginPage', () => {
 
   it('renders the sign in heading', () => {
     render(<LoginPage />)
-    expect(screen.getByText('Sign In')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
   })
 
   it('renders email and password inputs', () => {
