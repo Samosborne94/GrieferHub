@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.11",
+    "@vercel/speed-insights": "^2.0.0",
     "airtable": "^0.12.2",
     "autoprefixer": "^10.4.23",
     "bcryptjs": "^3.0.3",
