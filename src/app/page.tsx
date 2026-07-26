@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { PlayerSearch } from '@/components/search/PlayerSearch'
+import { HeroSearch } from '@/components/home/HeroSearch'
 import { ReportsCarousel } from '@/components/home/ReportsCarousel'
 import { LiveStats } from '@/components/home/LiveStats'
 
@@ -17,7 +17,18 @@ export default function HomePage() {
                 <section className="relative overflow-hidden">
                     {/* Background gradient effect */}
                     <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 via-transparent to-bg-primary/90" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,68,68,0.05),transparent_60%)]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,68,68,0.12),transparent)]" />
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+                            backgroundSize: '44px 44px',
+                            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
+                            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
+                        }}
+                    />
 
                     <div className="container relative z-10">
                         <div className="py-20 md:py-32 text-center">
@@ -31,22 +42,26 @@ export default function HomePage() {
                             </div>
 
                             {/* Main Heading */}
-                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-fade-in-up tracking-tighter uppercase">
-                                <span className="text-text-primary drop-shadow-lg">Trust</span>
-                                <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(255,68,68,0.8)] mx-4">No</span>
-                                <span className="text-text-primary drop-shadow-lg">One</span>
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 animate-fade-in-up tracking-tighter leading-[1.08]">
+                                <span className="text-text-primary drop-shadow-lg">Know who you&rsquo;re</span>
+                                <br />
+                                <span className="text-gradient drop-shadow-[0_0_10px_rgba(255,68,68,0.4)]">letting on your server</span>
                             </h1>
 
                             {/* Subheading */}
                             <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in-up font-light" style={{ animationDelay: '0.1s' }}>
-                                Verify every &ldquo;Friendly&rdquo; encounter. Track known betrayers.
-                                <br />
-                                <span className="text-accent-primary font-medium">Survive the extraction.</span>
+                                Search community-verified griefer reports
+                                <span className="text-accent-primary font-medium"> before they strike twice.</span>
                             </p>
 
                             {/* Search Component */}
-                            <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                                <PlayerSearch />
+                            <div className="mb-9 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                                <HeroSearch />
+                            </div>
+
+                            {/* Live Stats */}
+                            <div className="mb-12 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+                                <LiveStats />
                             </div>
 
                             {/* CTA Buttons */}
@@ -57,7 +72,7 @@ export default function HomePage() {
                                         <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </button>
                                 </Link>
-                                <Link href="/forum">
+                                <Link href="/intel">
                                     <button className="px-8 py-4 glass-hover rounded-xl font-semibold text-text-primary border border-border-primary hover:border-accent-primary transition-all duration-300 w-full sm:w-auto uppercase tracking-wide">
                                         View Intel Board
                                     </button>
@@ -67,11 +82,6 @@ export default function HomePage() {
                             {/* Live Report Stream */}
                             <div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                                 <ReportsCarousel />
-                            </div>
-
-                            {/* Live Stats */}
-                            <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-                                <LiveStats />
                             </div>
                         </div>
                     </div>

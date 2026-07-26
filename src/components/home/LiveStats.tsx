@@ -1,37 +1,74 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import type { Report } from '@/types/report'
 
-export const LiveStats = () => {
-    const stats = [
-        { label: 'Reports (24h)', value: '1,248', trend: '+12%', color: 'text-accent-primary' },
-        { label: 'Most Dangerous', value: 'Arc Raiders', trend: 'High Risk', color: 'text-orange-500' },
-        { label: 'Active Griefers', value: '432', trend: 'Online', color: 'text-red-500' },
-        { label: 'Global Bans', value: '89', trend: 'Today', color: 'text-status-resolved' },
+interface Stats {
+    total: number
+    verified: number
+    games: number
+}
+
+export const LiveStats: React.FC = () => {
+    const [stats, setStats] = useState<Stats | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        let cancelled = false
+
+        const fetchStats = async () => {
+            try {
+                const [allResponse, verifiedResponse] = await Promise.all([
+                    fetch('/api/reports?limit=100'),
+                    fetch('/api/reports?status=Verified&limit=1'),
+                ])
+                const [allData, verifiedData] = await Promise.all([
+                    allResponse.json(),
+                    verifiedResponse.json(),
+                ])
+
+                if (cancelled) return
+
+                if (allData.success && verifiedData.success) {
+                    const reports: Report[] = allData.data || []
+                    setStats({
+                        total: allData.pagination?.total ?? reports.length,
+                        verified: verifiedData.pagination?.total ?? 0,
+                        games: new Set(reports.map((report) => report.game)).size,
+                    })
+                }
+            } catch (err) {
+                console.error('Error fetching live stats:', err)
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
+        }
+
+        fetchStats()
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    const items = [
+        { label: 'reports', value: stats?.total, color: 'text-text-primary' },
+        { label: 'verified', value: stats?.verified, color: 'text-status-verified' },
+        { label: 'games covered', value: stats?.games, color: 'text-text-primary' },
     ]
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-            {stats.map((stat, idx) => (
-                <div key={idx} className="glass p-4 rounded-xl border-l-4 border-l-accent-primary/50 relative overflow-hidden group hover:bg-bg-elevated transition-colors">
-                    {/* Background number for style */}
-                    <div className="absolute -right-2 -bottom-4 text-6xl font-black text-bg-elevated opacity-20 pointer-events-none group-hover:scale-110 transition-transform">
-                        {idx + 1}
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="text-xs uppercase tracking-wider text-text-tertiary font-semibold mb-1">
-                            {stat.label}
-                        </div>
-                        <div className={`text-2xl font-black ${stat.color} mb-1 tracking-tight`}>
-                            {stat.value}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-mono text-text-secondary">
-                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                            {stat.trend}
-                        </div>
-                    </div>
-                </div>
+        <div className="flex justify-center gap-9 text-sm text-text-tertiary">
+            {items.map((item) => (
+                <span key={item.label}>
+                    {loading ? (
+                        <span className="block h-7 w-14 mx-auto mb-1 rounded-md bg-bg-elevated animate-pulse" />
+                    ) : (
+                        <b className={`block text-2xl font-extrabold tracking-tight ${item.color}`}>
+                            {item.value !== undefined ? item.value.toLocaleString('en-US') : '—'}
+                        </b>
+                    )}
+                    {item.label}
+                </span>
             ))}
         </div>
     )

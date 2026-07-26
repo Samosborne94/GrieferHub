@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ReportCard } from '@/components/reports/ReportCard'
@@ -9,13 +10,14 @@ import { NoReportsFound, NoReportsYet, ErrorState } from '@/components/common/Em
 import { Input } from '@/components/common/Input'
 import type { Report, ReportStatus, ReportSeverity } from '@/types/report'
 
-export default function IntelBoardPage() {
+function IntelBoardContent() {
+    const searchParams = useSearchParams()
     const [reports, setReports] = useState<Report[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Filter states
-    const [searchQuery, setSearchQuery] = useState('')
+    // Filter states (search is seeded from the URL, e.g. /intel?search=PlayerName)
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') ?? '')
     const [selectedGame, setSelectedGame] = useState<string>('')
     const [selectedStatus, setSelectedStatus] = useState<ReportStatus | ''>('')
     const [selectedSeverity, setSelectedSeverity] = useState<ReportSeverity | ''>('')
@@ -332,5 +334,23 @@ export default function IntelBoardPage() {
 
             <Footer />
         </div>
+    )
+}
+
+export default function IntelBoardPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex flex-col">
+                    <Header />
+                    <main className="flex-1 container py-8">
+                        <SkeletonGrid count={12} />
+                    </main>
+                    <Footer />
+                </div>
+            }
+        >
+            <IntelBoardContent />
+        </Suspense>
     )
 }

@@ -14,8 +14,8 @@
                 "Existing props/usages keep working; lint, typecheck and build pass"
             ],
             "priority": 1,
-            "passes": false,
-            "notes": ""
+            "passes": true,
+            "notes": "Implemented in ReportCard.tsx: evidence thumbnail area with video/image/link/none detection from evidenceUrl, YouTube thumbnail extraction, conic-gradient threat gauge overlay using severity tokens, gradient fallback banner, glass-hover lift + red glow, play button scales on hover. Props interface unchanged."
         },
         {
             "id": "US-002",
@@ -28,8 +28,8 @@
                 "Lint, typecheck and build pass"
             ],
             "priority": 2,
-            "passes": false,
-            "notes": ""
+            "passes": true,
+            "notes": "Implemented HeroSearch (routes to /intel?search=..., global / keypress focuses input), intel page seeds its search filter from the URL (wrapped in Suspense for useSearchParams), LiveStats rewritten to fetch total/verified/games from /api/reports with pulse loading skeletons, hero reworked to search-first layout per hero-intel.html."
         },
         {
             "id": "US-003",
