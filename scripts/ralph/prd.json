@@ -1,19 +1,74 @@
 {
     "project": "GrieferHub",
-    "branchName": "ralph/setup-tasks",
-    "description": "Initial setup tasks for GrieferHub",
+    "branchName": "ralph/launch-frontend-refresh",
+    "description": "Launch push: implement the approved design-system proposals (see design/proposals/) and surface seeded Steam-ban data in the UI.",
     "userStories": [
         {
             "id": "US-001",
-            "title": "Validate Ralph Installation",
-            "description": "As a developer, I need to ensure Ralph is working correctly by having it perform a simple check.",
+            "title": "Implement Report Card v2 (evidence-first)",
+            "description": "As a visitor, I want report cards to lead with evidence and threat level so I can judge a report at a glance. Reference design: design/proposals/report-card-v2.html.",
             "acceptanceCriteria": [
-                "Create a test file 'ralph-test.txt' in the root",
-                "Add content 'Hello from Ralph' to the file",
-                "Verify file works",
-                "Typecheck passes"
+                "ReportCard shows an evidence thumbnail area with play affordance when evidence_url is a video/image, with a graceful fallback banner otherwise",
+                "Severity is rendered as a threat gauge/badge overlaying the evidence area (colors per DESIGN_SYSTEM.md severity tokens)",
+                "Hover state matches the proposal (lift, red border glow, play button scale)",
+                "Existing props/usages keep working; lint, typecheck and build pass"
             ],
             "priority": 1,
+            "passes": false,
+            "notes": ""
+        },
+        {
+            "id": "US-002",
+            "title": "Search-first Intel Board hero",
+            "description": "As a server admin, I want to search a player name the moment I land so I can vet players fast. Reference design: design/proposals/hero-intel.html.",
+            "acceptanceCriteria": [
+                "Home page hero has a prominent search input that routes to filtered Intel Board results",
+                "Pressing / focuses the search input",
+                "Live stat row (total, verified, games) driven by real API data with graceful loading state",
+                "Lint, typecheck and build pass"
+            ],
+            "priority": 2,
+            "passes": false,
+            "notes": ""
+        },
+        {
+            "id": "US-003",
+            "title": "Steam-ban provenance badge",
+            "description": "As a visitor, I want imported Steam-ban reports clearly labelled so I can distinguish API-verified bans from community reports. Importer stamps tags ['steam-ban','auto-import'] and 'SteamID64: <id>' in the description (scripts/import-steam-bans.mjs).",
+            "acceptanceCriteria": [
+                "Reports tagged steam-ban show a distinct 'Steam Ban on Record' badge on card and detail views",
+                "Detail view links to the Steam profile (evidence_url) and shows the attribution caveat from the description",
+                "Lint, typecheck and build pass"
+            ],
+            "priority": 3,
+            "passes": false,
+            "notes": ""
+        },
+        {
+            "id": "US-004",
+            "title": "Griefer profile page (aggregated reports)",
+            "description": "As a visitor, I want a per-griefer page aggregating all their verified reports. Reference design: design/proposals/griefer-profile.html.",
+            "acceptanceCriteria": [
+                "Route /griefer/[name] lists all verified reports for that griefer_name with count, games and severity summary",
+                "Report cards and detail pages link the griefer name to this page",
+                "Empty/404 state for unknown names",
+                "Lint, typecheck and build pass"
+            ],
+            "priority": 4,
+            "passes": false,
+            "notes": ""
+        },
+        {
+            "id": "US-005",
+            "title": "Keyboard-first moderation queue",
+            "description": "As a moderator, I want J/K navigation and V/R verify/reject shortcuts so triage takes under a minute per report. Reference design: design/proposals/moderation-queue.html.",
+            "acceptanceCriteria": [
+                "Mod queue rows are focusable and navigable with J/K, with V=verify and R=reject invoking the existing status API",
+                "Visible keyboard hints in the queue header",
+                "Actions show optimistic UI updates with error rollback",
+                "Lint, typecheck and build pass"
+            ],
+            "priority": 5,
             "passes": false,
             "notes": ""
         }

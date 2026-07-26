@@ -59,8 +59,15 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS"
   echo "═══════════════════════════════════════════════════════"
   
-  # Run amp with the ralph prompt
-  OUTPUT=$(cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr) || true
+  # Run the agent CLI with the ralph prompt (amp if installed, else claude)
+  if command -v amp >/dev/null 2>&1; then
+    OUTPUT=$(cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr) || true
+  elif command -v claude >/dev/null 2>&1; then
+    OUTPUT=$(claude -p "$(cat "$SCRIPT_DIR/prompt.md")" --dangerously-skip-permissions 2>&1 | tee /dev/stderr) || true
+  else
+    echo "Neither 'amp' nor 'claude' CLI found on PATH. Install one to run Ralph." >&2
+    exit 1
+  fi
   
   # Check for completion signal
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then

@@ -2,9 +2,36 @@
 
 ## 📍 Current Status
 
-**Version**: 0.5.0 (Phase 5 Complete)
-**Last Updated**: 2026-01-12
+**Version**: 0.5.1 (Phase 5 Complete — launch push in progress)
+**Last Updated**: 2026-07-26
 **Overall Progress**: 83% Complete
+
+---
+
+## 🚀 Launch Readiness Push (July 2026)
+
+The codebase has been idle since January; this is the concrete path to a live,
+populated site. Work items in priority order:
+
+1. **Unblock deployments** — Vercel Preview environment lacks `AIRTABLE_API_KEY`
+   / `AIRTABLE_BASE_ID` (build-time crash fixed by lazy client init on
+   PR #5; runtime still needs the secrets, ideally a staging base).
+2. **Merge PR #5** — design-system bundle (`design/`) + lint/build fixes that
+   every future preview deployment depends on.
+3. **Seed the database** — `npm run import:steam-bans` imports Steam-API-confirmed
+   banned accounts from a curated candidate CSV
+   (`scripts/steam-seeds/`). Steam cannot enumerate bans per game, so candidates
+   come from community sources and every record keeps its source URL.
+   Requires `STEAM_API_KEY`.
+4. **Frontend refresh** — implement the `design/proposals/` cards
+   (report card v2, search-first hero, steam-ban badge, griefer profiles,
+   keyboard-first mod queue). Tracked as Ralph PRD
+   `scripts/ralph/prd.json` (branch `ralph/launch-frontend-refresh`, US-001…US-005).
+5. **Reconcile stale PRs** — PR #2 (`ralph/phase-6-community`) and PR #1
+   (profile work stacked on it) carry Phase 6 features from February but have
+   drifted ~5 months behind master; salvage or close.
+6. **Domain + production env** — pick the domain (see `domain-research.md`)
+   and finish the DEPLOYMENT.md production checklist.
 
 ---
 
