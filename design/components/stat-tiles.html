@@ -1,0 +1,19 @@
+<!-- @dsCard group="Components" name="Stat Tiles" -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tile{border-radius:12px;padding:20px;background:rgba(20,20,20,.6);border:1px solid rgba(255,255,255,.1);transition:all .25s}
+.tile:hover{transform:translateY(-2px);border-color:rgba(255,68,68,.3)}
+.num{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.lbl{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+.delta{font-size:12px;margin-top:8px;font-weight:600}
+.up{color:#10b981}.hot{color:#f59e0b}
+@media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+<div class="grid">
+  <div class="tile"><div class="num">1,284</div><div class="lbl">Total Reports</div><div class="delta up">▲ 42 this week</div></div>
+  <div class="tile"><div class="num" style="color:#10b981">947</div><div class="lbl">Verified</div><div class="delta up">73.8% verify rate</div></div>
+  <div class="tile"><div class="num" style="color:#f59e0b">86</div><div class="lbl">Under Review</div><div class="delta hot">avg 18h to verdict</div></div>
+  <div class="tile"><div class="num" style="color:#ff4444">12</div><div class="lbl">Critical Threats</div><div class="delta hot">3 active this week</div></div>
+</div>

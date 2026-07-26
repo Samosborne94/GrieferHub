@@ -1,0 +1,42 @@
+<!-- @dsCard group="Foundations" name="Color System" -->
+<style>
+:root{--bg-0:#0a0a0a;--bg-1:#141414;--bg-2:#1e1e1e;--bg-3:#252525;--bg-hover:#2a2a2a;--tx-1:#fff;--tx-2:#a0a0a0;--tx-3:#666;--tx-4:#4a4a4a;--acc:#ff4444;--acc-2:#ff6b6b;--bd-1:rgba(255,255,255,.1);--bd-2:rgba(255,255,255,.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-0);color:var(--tx-1);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx-3);margin:20px 0 10px}
+h2:first-child{margin-top:0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.sw{flex:1;min-width:110px;border-radius:10px;border:1px solid var(--bd-1);overflow:hidden}
+.sw .chip{height:56px}
+.sw .meta{padding:8px 10px;background:var(--bg-1)}
+.sw .meta b{display:block;font-size:12px;font-weight:600}
+.sw .meta span{font-size:11px;color:var(--tx-3);font-family:ui-monospace,monospace}
+</style>
+<h2>Background — layered depth</h2>
+<div class="row">
+  <div class="sw"><div class="chip" style="background:#0a0a0a"></div><div class="meta"><b>bg-primary</b><span>#0a0a0a</span></div></div>
+  <div class="sw"><div class="chip" style="background:#141414"></div><div class="meta"><b>bg-secondary</b><span>#141414</span></div></div>
+  <div class="sw"><div class="chip" style="background:#1e1e1e"></div><div class="meta"><b>bg-tertiary</b><span>#1e1e1e</span></div></div>
+  <div class="sw"><div class="chip" style="background:#252525"></div><div class="meta"><b>bg-elevated</b><span>#252525</span></div></div>
+  <div class="sw"><div class="chip" style="background:#2a2a2a"></div><div class="meta"><b>bg-hover</b><span>#2a2a2a</span></div></div>
+</div>
+<h2>Text — semantic hierarchy</h2>
+<div class="row">
+  <div class="sw"><div class="chip" style="background:#ffffff"></div><div class="meta"><b>text-primary</b><span>#ffffff</span></div></div>
+  <div class="sw"><div class="chip" style="background:#a0a0a0"></div><div class="meta"><b>text-secondary</b><span>#a0a0a0</span></div></div>
+  <div class="sw"><div class="chip" style="background:#666666"></div><div class="meta"><b>text-tertiary</b><span>#666666</span></div></div>
+  <div class="sw"><div class="chip" style="background:#4a4a4a"></div><div class="meta"><b>text-muted</b><span>#4a4a4a</span></div></div>
+</div>
+<h2>Accent — brand identity</h2>
+<div class="row">
+  <div class="sw"><div class="chip" style="background:#ff4444"></div><div class="meta"><b>accent-primary</b><span>#ff4444</span></div></div>
+  <div class="sw"><div class="chip" style="background:#ff5555"></div><div class="meta"><b>accent-hover</b><span>#ff5555</span></div></div>
+  <div class="sw"><div class="chip" style="background:#ff6b6b"></div><div class="meta"><b>accent-secondary</b><span>#ff6b6b</span></div></div>
+  <div class="sw"><div class="chip" style="background:linear-gradient(135deg,#ff4444,#ff6b6b)"></div><div class="meta"><b>accent-gradient</b><span>135° 4444→6b6b</span></div></div>
+</div>
+<h2>Borders — subtle separation</h2>
+<div class="row">
+  <div class="sw"><div class="chip" style="background:#1e1e1e;border-bottom:2px solid rgba(255,255,255,.1)"></div><div class="meta"><b>border-primary</b><span>white / 10%</span></div></div>
+  <div class="sw"><div class="chip" style="background:#1e1e1e;border-bottom:2px solid rgba(255,255,255,.05)"></div><div class="meta"><b>border-secondary</b><span>white / 5%</span></div></div>
+  <div class="sw"><div class="chip" style="background:#1e1e1e;border-bottom:2px solid rgba(255,68,68,.3)"></div><div class="meta"><b>border-accent</b><span>accent / 30%</span></div></div>
+</div>

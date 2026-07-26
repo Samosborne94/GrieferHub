@@ -1,0 +1,30 @@
+<!-- @dsCard group="Foundations" name="Status & Severity" -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#666;margin:20px 0 10px}
+h2:first-child{margin-top:0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.tok{flex:1;min-width:130px;border-radius:10px;padding:12px;border:1px solid}
+.tok b{display:block;font-size:13px;font-weight:700;margin-bottom:2px}
+.tok span{font-size:11px;opacity:.75;font-family:ui-monospace,monospace}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+</style>
+<h2>Report status</h2>
+<div class="row">
+  <div class="tok" style="background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#10b981"><b><span class="dot" style="background:#10b981"></span>Verified</b><span>#10b981 — public on Intel Board</span></div>
+  <div class="tok" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#f59e0b"><b><span class="dot" style="background:#f59e0b"></span>Under Review</b><span>#f59e0b — in mod queue</span></div>
+  <div class="tok" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#3b82f6"><b><span class="dot" style="background:#3b82f6"></span>Resolved</b><span>#3b82f6 — incident closed</span></div>
+  <div class="tok" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#ef4444"><b><span class="dot" style="background:#ef4444"></span>Rejected</b><span>#ef4444 — hidden from public</span></div>
+</div>
+<h2>Threat severity</h2>
+<div class="row">
+  <div class="tok" style="background:rgba(107,114,128,.1);border-color:rgba(107,114,128,.3);color:#9ca3af"><b>● Low</b><span>#6b7280 — nuisance</span></div>
+  <div class="tok" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#f59e0b"><b>●● Medium</b><span>#f59e0b — repeat offender</span></div>
+  <div class="tok" style="background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.3);color:#f97316"><b>●●● High</b><span>#f97316 — organized griefing</span></div>
+  <div class="tok" style="background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.3);color:#ef4444"><b>●●●● Critical</b><span>#dc2626 — server-destroying</span></div>
+</div>
+<h2>Usage rule</h2>
+<div style="background:#141414;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;color:#a0a0a0;font-size:13px">
+Solid color at <b style="color:#fff">100%</b> for text and icons · <b style="color:#fff">10%</b> tint for fills · <b style="color:#fff">30%</b> for borders. Status = workflow state (badge, pill). Severity = threat level (left accent bar, meter, ring). Never mix the two vocabularies on one element.
+</div>

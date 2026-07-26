@@ -1,0 +1,53 @@
+<!-- @dsCard group="Proposals" name="Moderation Queue — fast triage" -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px}
+.queue{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:#141414}
+.qhead{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:#1a1a1a}
+.qhead h3{font-size:14px;font-weight:700}
+.qhead span{font-size:12px;color:#666}
+kbd{padding:1px 6px;border-radius:4px;background:#252525;border:1px solid rgba(255,255,255,.1);font:10px ui-monospace,monospace;color:#a0a0a0}
+.row{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.05);transition:background .15s}
+.row:hover{background:#1a1a1a}
+.row.active{background:rgba(255,68,68,.05);box-shadow:inset 3px 0 0 #ff4444}
+.thumb{width:56px;height:38px;border-radius:6px;background:linear-gradient(135deg,#1a1a2e,#0f3460);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.info{min-width:0;flex:1}
+.info b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info span{font-size:11px;color:#666}
+.sev{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+.crit{background:rgba(220,38,38,.12);color:#ef4444;border:1px solid rgba(220,38,38,.35)}
+.high{background:rgba(249,115,22,.12);color:#f97316;border:1px solid rgba(249,115,22,.35)}
+.med{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.35)}
+.age{font-size:11px;color:#666;width:52px;text-align:right;flex-shrink:0}
+.age.warn{color:#f59e0b}
+.acts{display:flex;gap:6px;flex-shrink:0}
+.acts button{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:#1e1e1e;color:#a0a0a0;cursor:pointer;font-size:13px;transition:all .15s}
+.acts .ok:hover{background:rgba(16,185,129,.15);border-color:#10b981;color:#10b981}
+.acts .no:hover{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444}
+.acts .zoom:hover{background:#252525;color:#fff}
+</style>
+<div class="queue">
+  <div class="qhead">
+    <h3>Review queue <span style="color:#f59e0b">· 86 pending</span></h3>
+    <span><kbd>J</kbd>/<kbd>K</kbd> navigate · <kbd>V</kbd> verify · <kbd>R</kbd> reject · <kbd>Space</kbd> preview evidence</span>
+  </div>
+  <div class="row active">
+    <div class="thumb">▶</div>
+    <div class="info"><b>xX_Destroyer_Xx — TNT spawn destruction</b><span>Minecraft · Hypixel SMP · 4 clips · reporter: MinerRights (12 verified priors)</span></div>
+    <span class="sev crit">CRITICAL</span><span class="age warn">2d 4h</span>
+    <div class="acts"><button class="zoom">⛶</button><button class="ok">✓</button><button class="no">✕</button></div>
+  </div>
+  <div class="row">
+    <div class="thumb">🖼</div>
+    <div class="info"><b>SneakyPete99 — chest looting spree</b><span>Rust · official #114 · 2 screenshots · reporter: new account</span></div>
+    <span class="sev high">HIGH</span><span class="age">11h</span>
+    <div class="acts"><button class="zoom">⛶</button><button class="ok">✓</button><button class="no">✕</button></div>
+  </div>
+  <div class="row">
+    <div class="thumb">▶</div>
+    <div class="info"><b>GriefKing_TV — stream-sniping compilation</b><span>GTA V · community RP · 1 clip · reporter: modteam referral</span></div>
+    <span class="sev med">MEDIUM</span><span class="age">3h</span>
+    <div class="acts"><button class="zoom">⛶</button><button class="ok">✓</button><button class="no">✕</button></div>
+  </div>
+</div>
+<p style="font-size:12px;color:#4a4a4a;margin-top:14px">Triage-optimized: keyboard-first flow, inline evidence preview, reporter credibility signal, SLA-age warning. Target: &lt;60s per report vs the current multi-click flow.</p>
