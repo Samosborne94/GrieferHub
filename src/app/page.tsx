@@ -39,7 +39,7 @@ export default function HomePage() {
 
                             {/* Subheading */}
                             <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in-up font-light" style={{ animationDelay: '0.1s' }}>
-                                Verify every "Friendly" encounter. Track known betrayers.
+                                Verify every &ldquo;Friendly&rdquo; encounter. Track known betrayers.
                                 <br />
                                 <span className="text-accent-primary font-medium">Survive the extraction.</span>
                             </p>
@@ -177,7 +177,7 @@ export default function HomePage() {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-text-primary mb-2">Community-Driven</h3>
-                                            <p className="text-text-secondary">Built by gamers for gamers. Your feedback shapes our platform's future.</p>
+                                            <p className="text-text-secondary">Built by gamers for gamers. Your feedback shapes our platform&apos;s future.</p>
                                         </div>
                                     </div>
                                 </div>

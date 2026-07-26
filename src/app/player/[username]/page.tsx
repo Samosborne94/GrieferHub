@@ -141,7 +141,7 @@ export default function PlayerProfilePage() {
                                     </div>
                                 </div>
                                 <p className="text-text-primary mb-4 leading-relaxed bg-bg-tertiary/30 p-4 rounded-lg">
-                                    "{report.description}"
+                                    &ldquo;{report.description}&rdquo;
                                 </p>
                                 <div className="flex justify-between items-center text-sm">
                                     <div className="text-text-secondary">
