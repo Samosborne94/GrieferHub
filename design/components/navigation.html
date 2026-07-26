@@ -1,0 +1,37 @@
+<!-- @dsCard group="Components" name="Header / Navigation" -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+header{position:sticky;top:0;background:rgba(20,20,20,.6);backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.1)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;text-decoration:none;color:#fff}
+.mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#ff4444,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:16px}
+.grad{background:linear-gradient(135deg,#ff4444,#ff6b6b);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{display:flex;gap:4px}
+nav a{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;color:#a0a0a0;transition:all .2s}
+nav a:hover{color:#fff;background:#252525}
+nav a.on{background:rgba(255,68,68,.1);color:#ff4444}
+nav a.mod{color:rgba(59,130,246,.7)}nav a.mod:hover{color:#3b82f6}
+.auth{display:flex;align-items:center;gap:12px}
+.user{display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:8px;background:#252525;border:1px solid rgba(255,255,255,.05);font-size:13px;color:#a0a0a0}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#ff4444,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.ghost{padding:6px 12px;border-radius:8px;background:none;border:0;color:#fff;font-size:14px;font-weight:500;cursor:pointer}
+.ghost:hover{background:#1e1e1e}
+main{padding:40px 24px;color:#4a4a4a;text-align:center;font-size:13px}
+</style>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#"><span class="mark">🔥</span><span>Griefer<span class="grad">Hub</span></span></a>
+    <nav>
+      <a class="on" href="#">📋 Intel Board</a>
+      <a href="#">＋ Submit Report</a>
+      <a href="#">🏠 Dashboard</a>
+      <a class="mod" href="#">🛡 Moderation</a>
+    </nav>
+    <div class="auth">
+      <span class="user"><span class="avatar">S</span>Sam</span>
+      <button class="ghost">Sign Out</button>
+    </div>
+  </div>
+</header>
+<main>Sticky glass header · blur(16px) saturate(180%) · active link = accent 10% tint · role links tinted by role color</main>

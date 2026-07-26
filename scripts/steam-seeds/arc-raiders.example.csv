@@ -1,0 +1,8 @@
+# Candidate SteamIDs for the ARC Raiders seed import.
+# Copy to arc-raiders.csv and fill in real candidates before running:
+#   npm run import:steam-bans -- --file scripts/steam-seeds/arc-raiders.csv --dry-run
+# steamid64 may be a 17-digit SteamID64 or a steamcommunity.com vanity name.
+# source_url should point to where the account was identified (community
+# cheater thread, ban announcement, your own report) — it is stored on the record.
+steamid64,source_url,notes
+76561197960287930,https://example.com/community-ban-thread,example row - replace me
